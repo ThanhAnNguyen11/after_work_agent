@@ -235,6 +235,8 @@ if not st.session_state.get("is_onboarded", True):
                 i_running = st.checkbox("Running")
                 i_gym = st.checkbox("Gym")
                 i_badminton = st.checkbox("Badminton")
+                i_swimming = st.checkbox("Swimming")
+                i_taekwondo = st.checkbox("Taekwondo")
             with col_learn:
                 st.markdown("**Learning**")
                 i_ai = st.checkbox("AI")
@@ -245,7 +247,8 @@ if not st.session_state.get("is_onboarded", True):
                 i_movies = st.checkbox("Movies")
                 i_bg = st.checkbox("Board Games")
                 i_coffee = st.checkbox("Coffee Chat")
-                
+                i_karaoke = st.checkbox("Karaoke")
+
             submit_onboard = st.form_submit_button("Save & Complete Onboarding", use_container_width=True, type="primary")
             if submit_onboard:
                 if not full_name:
@@ -256,12 +259,15 @@ if not st.session_state.get("is_onboarded", True):
                     if i_running: interests.append("running")
                     if i_gym: interests.append("gym")
                     if i_badminton: interests.append("badminton")
+                    if i_swimming: interests.append("swimming")
+                    if i_taekwondo: interests.append("taekwondo")
                     if i_ai: interests.append("ai")
                     if i_product: interests.append("product")
                     if i_english: interests.append("english")
                     if i_movies: interests.append("movies")
                     if i_bg: interests.append("board games")
-                    if i_coffee: interests.append("coffee")
+                    if i_coffee: interests.append("coffee chat")
+                    if i_karaoke: interests.append("karaoke")
                     
                     onboarding_data = {
                         "full_name": full_name,
@@ -801,8 +807,8 @@ elif page == "👤 My Profile" and current_user:
         st.subheader("Your Interests")
         st.markdown("*Select the categories you'd like to discover. This matches against upcoming events.*")
         
-        # Standard interest options
-        all_interests = ["football", "running", "gym", "yoga", "badminton", "board games", "coffee", "ai", "product", "startup", "english", "movies", "swimming"]
+        # Standard interest options (matches onboarding categories)
+        all_interests = ["football", "running", "gym", "swimming", "taekwondo", "badminton", "ai", "product", "english", "movies", "board games", "coffee chat", "karaoke"]
         
         # Prefill current interests
         user_interests = current_user["interests"]

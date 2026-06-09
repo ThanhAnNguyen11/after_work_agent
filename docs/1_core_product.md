@@ -117,10 +117,13 @@ During onboarding, users select interests.
 
 ### Sports
 
+* Badminton
 * Football
 * Running
 * Gym
-* Badminton
+* Swimming
+* Taekwondo
+
 
 ### Learning
 
@@ -133,6 +136,7 @@ During onboarding, users select interests.
 * Movies
 * Board Games
 * Coffee Chat
+* Karaoke
 
 Users can select multiple interests.
 
