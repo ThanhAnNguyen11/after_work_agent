@@ -31,8 +31,15 @@ after-work-agent/
 ├── requirements.txt         # Core dependencies
 ├── Dockerfile               # Production multi-process docker package
 ├── entrypoint.sh            # Runs backend & frontend servers in parallel
-├── README.md                # Documentation
+├── README.md                # Main readme
 ├── database.db              # SQLite Database (Auto-created on startup)
+├── docs/                    # Modularized blueprint & specs
+│   ├── AFTER_WORK_AGENT_BLUEPRINT.md  # Main blueprint entrypoint index
+│   ├── 1_core_product.md    # Auth, onboarding, interests & core features
+│   ├── 2_activity_lifecycle.md # Creation, guidelines, join flow & full capacity
+│   ├── 3_data_model.md      # Database tables and fields specification
+│   ├── 4_agent_responsibilities.md # LangGraph agent inputs/outputs
+│   └── 5_system_prompts.md  # System rules, cold start & grounding prompts
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py
@@ -55,6 +62,7 @@ after-work-agent/
     ├── app.py               # Streamlit application with custom premium layout
     └── api_client.py        # Streamlit REST client connecting to FastAPI
 ```
+
 
 ---
 

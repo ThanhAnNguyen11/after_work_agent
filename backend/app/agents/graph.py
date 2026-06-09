@@ -4,7 +4,7 @@ from langgraph.graph import StateGraph, END
 from sqlalchemy.orm import Session
 
 from backend.app.database import SessionLocal
-from backend.app.models import User, Activity, GymClass, ActivityParticipant, Memory
+from backend.app.models import User, Activity, GymClass, ActivityParticipant, Memory, RecommendationLog
 from backend.app.org_utils import calculate_recommendation_score, organization_distance
 from backend.app.agents.extraction import extract_activity_from_text
 from backend.app.agents.discovery import run_discovery_agent
@@ -44,7 +44,8 @@ def intent_detector(state: AgentState) -> Dict[str, Any]:
     creation_signals = [
         "at 6pm", "at 6 pm", "at 7pm", "at 5pm", "at 18:00", "at 19:00",
         "need 2 more", "need 3 more", "need more players", "need players",
-        "anyone want to play", "football at", "badminton at", "board games at"
+        "anyone want to play", "football at", "badminton at", "board games at",
+        "swimming at", "pool at", "swim at"
     ]
     
     if any(sig in message for sig in creation_signals):
@@ -345,7 +346,8 @@ def recommendation_node(state: AgentState) -> Dict[str, Any]:
                 user_history=history,
                 participants=peers,
                 creator=creator,
-                user_query=state.get("message", "")
+                user_query=state.get("message", ""),
+                db=db
             )
             
             # Format info dict
@@ -355,7 +357,8 @@ def recommendation_node(state: AgentState) -> Dict[str, Any]:
                 "start_time": item["start_time"],
                 "end_time": item.get("end_time", ""),
                 "location": item["location"],
-                "class_type": item["type"]
+                "class_type": item["type"],
+                "id": item["id"]
             }
             
             scored_list.append({
@@ -380,7 +383,7 @@ def recommendation_node(state: AgentState) -> Dict[str, Any]:
                 for item in scored_list:
                     act_name = item["info"]["title"].lower()
                     act_type = item["info"]["type"].lower()
-                    if act_type in msg_clean or act_name in msg_clean or (act_type == "gym" and "yoga" in msg_clean):
+                    if act_type in msg_clean or act_name in msg_clean or (act_type == "gym" and "yoga" in msg_clean) or "swim" in msg_clean or "pool" in msg_clean:
                         in_routine_trap = False
                         break
 
@@ -395,6 +398,30 @@ def recommendation_node(state: AgentState) -> Dict[str, Any]:
             dominant_type=dominant_type
         )
         
+        # Log presented recommendations
+        for item in scored_list[:3]:
+            info = item["info"]
+            act_id = info["id"] if info["class_type"] == "dynamic" else None
+            gym_id = info["id"] if info["class_type"] == "gym_class" else None
+            
+            today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+            existing = db.query(RecommendationLog).filter(
+                RecommendationLog.user_id == user_id,
+                RecommendationLog.activity_id == act_id,
+                RecommendationLog.gym_class_id == gym_id,
+                RecommendationLog.recommended_at >= today_start
+            ).first()
+            
+            if not existing:
+                log = RecommendationLog(
+                    user_id=user_id,
+                    activity_id=act_id,
+                    gym_class_id=gym_id,
+                    status="shown"
+                )
+                db.add(log)
+        db.commit()
+
         return {
             "scored_recommendations": scored_list,
             "response": response

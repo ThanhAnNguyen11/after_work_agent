@@ -3,7 +3,7 @@ import json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from backend.app.config import settings
-from backend.app.models import Base, User, GymClass, Activity, ActivityParticipant, Memory
+from backend.app.models import Base, User, GymClass, Activity, ActivityParticipant, Memory, RecommendationLog, UserExperience, UserBehavioralInterest, ParticipationJournal, Notification
 
 # For SQLite, we use connect_args={"check_same_thread": False} to allow multi-threaded access
 engine = create_engine(settings.DATABASE_URL, connect_args={"check_same_thread": False})
@@ -36,7 +36,7 @@ def init_db():
                 "org_group": "TEP",
                 "department": "PCT",
                 "squad": "Consumer Solutions",
-                "interests": ["football", "gym", "ai"]
+                "interests": ["football", "gym", "ai", "swimming"]
             },
             {
                 "domain": "binhnd2",
@@ -66,7 +66,7 @@ def init_db():
                 "org_group": "BIZ",
                 "department": "Partnership",
                 "squad": None,
-                "interests": ["zumba", "yoga", "coffee"]
+                "interests": ["zumba", "yoga", "coffee", "swimming"]
             },
             {
                 "domain": "lannt",
@@ -94,6 +94,8 @@ def init_db():
         for u in users_data:
             user = User(
                 domain=u["domain"],
+                password="abc",
+                is_onboarded=True,
                 full_name=u["full_name"],
                 title=u["title"],
                 company=u["company"],
@@ -205,6 +207,17 @@ def init_db():
                 "location": "Upfit VNG Studio Room B",
                 "capacity": 20,
                 "instructor": "Shindo",
+                "active": True
+            },
+            {
+                "class_name": "Swimming",
+                "description": "Free swimming session at the company pool. Open for all employees.",
+                "weekday": "Monday, Tuesday, Wednesday, Thursday, Friday",
+                "start_time": "06:00",
+                "end_time": "20:00",
+                "location": "Company Swimming Pool",
+                "capacity": 50,
+                "instructor": "Self-regulated",
                 "active": True
             }
         ]

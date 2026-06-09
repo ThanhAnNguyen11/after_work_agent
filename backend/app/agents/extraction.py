@@ -18,7 +18,7 @@ def extract_activity_from_text(text: str) -> dict:
     Return ONLY a valid JSON object. Do not include any introductory or concluding text, or markdown code blocks.
     
     Fields to extract:
-    1. "activity_type": string, lower-case (e.g., "football", "gym", "badminton", "board games", "yoga", "running", "coffee", "ai"). If not specified, categorize it logically.
+    1. "activity_type": string, lower-case (e.g., "football", "gym", "badminton", "board games", "yoga", "running", "coffee", "ai", "swimming"). If not specified, categorize it logically.
     2. "start_time": string, HH:MM format (24-hour clock, e.g. "18:00", "18:30"). If not specified, default to "18:00".
     3. "required_players": integer, the number of additional players/participants needed. If not specified or implied, use a default like 2.
     4. "title": string, a short catchy title for the activity (e.g., "Football Game", "Board Game Gather").
@@ -57,7 +57,7 @@ def extract_activity_from_text(text: str) -> dict:
         print(f"Error parsing JSON from Extraction Agent: {e}. Raw: {cleaned}")
         # Fallback to local regex-based logic if LLM output fails
         return {
-            "activity_type": "football" if "foot" in text.lower() else "gym",
+            "activity_type": "football" if "foot" in text.lower() else "swimming" if "swim" in text.lower() else "gym",
             "start_time": "18:00",
             "required_players": 2,
             "title": "Extracted Activity",

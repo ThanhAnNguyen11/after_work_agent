@@ -1,15 +1,19 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List
-from datetime import datetime, timedelta
+from typing import List, Optional
+from datetime import datetime, timedelta, date
 
 from backend.app.database import get_db, init_db
-from backend.app.models import User, Activity, GymClass, ActivityParticipant, Memory
+from backend.app.models import User, Activity, GymClass, ActivityParticipant, Memory, RecommendationLog, UserExperience, UserBehavioralInterest, ParticipationJournal, Notification
 from backend.app.schemas import (
     UserCreate, UserResponse, ActivityCreate, ActivityResponse, 
     GymClassResponse, MemoryResponse, ChatRequest, ChatResponse,
-    JoinActivityRequest, JoinActivityResponse
+    JoinActivityRequest, JoinActivityResponse,
+    RecommendationLogCreate, RecommendationLogResponse, RecommendationStatusUpdate,
+    UserExperienceCreate, UserExperienceResponse,
+    JournalOption, JournalPendingResponse, JournalResolveRequest, NotificationResponse,
+    UserLoginRequest, UserLoginResponse, UserOnboardRequest
 )
 from backend.app.agents.graph import run_agent_flow
 from backend.app.org_utils import organization_distance
@@ -166,10 +170,16 @@ def get_user_history(user_id: int, db: Session = Depends(get_db)):
 
 # --- ACTIVITY ENDPOINTS ---
 
+def _enrich_activity(activity: Activity, db: Session) -> ActivityResponse:
+    creator = db.query(User).filter(User.id == activity.created_by).first()
+    data = ActivityResponse.model_validate(activity)
+    data.host_name = creator.full_name if creator else None
+    return data
+
 @app.get("/api/activities", response_model=List[ActivityResponse])
 def list_activities(db: Session = Depends(get_db)):
-    # Order upcoming activities
-    return db.query(Activity).order_by(Activity.start_time.asc()).all()
+    activities = db.query(Activity).order_by(Activity.start_time.asc()).all()
+    return [_enrich_activity(a, db) for a in activities]
 
 @app.post("/api/activities", response_model=ActivityResponse)
 def create_activity(act_in: ActivityCreate, creator_id: int, db: Session = Depends(get_db)):
@@ -177,16 +187,28 @@ def create_activity(act_in: ActivityCreate, creator_id: int, db: Session = Depen
     if not creator:
         raise HTTPException(status_code=404, detail="Creator user not found")
         
+    guidelines = act_in.guidelines
+    if not guidelines:
+        default_guidelines = {
+            "football": "Bring football shoes. Arrive 10 minutes early. Field #3.",
+            "yoga": "Bring a towel. Arrive 5 minutes early.",
+            "ai": "Bring a laptop. Topic: AI Agents."
+        }
+        guidelines = default_guidelines.get(act_in.activity_type.lower(), "Arrive early and have fun!")
+        
     activity = Activity(
         title=act_in.title,
         description=act_in.description,
         activity_type=act_in.activity_type,
+        source="user_created",
         start_time=act_in.start_time,
         end_time=act_in.end_time or (act_in.start_time + timedelta(hours=1)),
         location=act_in.location,
         participant_limit=act_in.participant_limit,
         current_participants=1,  # Creator joins automatically
-        created_by=creator_id
+        created_by=creator_id,
+        guidelines=guidelines,
+        status="active"
     )
     db.add(activity)
     db.flush()
@@ -196,8 +218,20 @@ def create_activity(act_in: ActivityCreate, creator_id: int, db: Session = Depen
     db.add(participant)
     db.commit()
     db.refresh(activity)
-    
-    return activity
+
+    return _enrich_activity(activity, db)
+
+@app.delete("/api/activities/{activity_id}")
+def delete_activity(activity_id: int, user_id: int, db: Session = Depends(get_db)):
+    activity = db.query(Activity).filter(Activity.id == activity_id).first()
+    if not activity:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    if activity.created_by != user_id:
+        raise HTTPException(status_code=403, detail="Only the activity host can delete this activity")
+    db.query(ActivityParticipant).filter(ActivityParticipant.activity_id == activity_id).delete()
+    db.delete(activity)
+    db.commit()
+    return {"success": True, "message": "Activity deleted."}
 
 @app.post("/api/activities/{activity_id}/join", response_model=JoinActivityResponse)
 def join_activity(activity_id: int, req: JoinActivityRequest, db: Session = Depends(get_db)):
@@ -208,6 +242,14 @@ def join_activity(activity_id: int, req: JoinActivityRequest, db: Session = Depe
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
     if not activity:
         raise HTTPException(status_code=404, detail="Activity not found")
+        
+    # Check if activity status is inactive
+    if activity.status == "inactive":
+        return JoinActivityResponse(
+            success=False,
+            message="This activity is inactive or already full.",
+            current_participants=activity.current_participants
+        )
         
     # Check if already joined
     existing = db.query(ActivityParticipant).filter(
@@ -236,6 +278,34 @@ def join_activity(activity_id: int, req: JoinActivityRequest, db: Session = Depe
     
     # Increment current_participants
     activity.current_participants += 1
+    
+    # Notify host that the user joined (if host is not the joining user)
+    if activity.created_by != req.user_id:
+        join_notif = Notification(
+            user_id=activity.created_by,
+            message=f"{user.full_name} joined your activity: '{activity.title}'."
+        )
+        db.add(join_notif)
+        
+    # Mark status as inactive if limit is reached, and notify host
+    if activity.current_participants >= activity.participant_limit:
+        activity.status = "inactive"
+        full_notif = Notification(
+            user_id=activity.created_by,
+            message=f"Your activity '{activity.title}' is now full."
+        )
+        db.add(full_notif)
+    
+    # Update recommendation log status to joined if it exists
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    rec_log = db.query(RecommendationLog).filter(
+        RecommendationLog.user_id == req.user_id,
+        RecommendationLog.activity_id == activity_id,
+        RecommendationLog.recommended_at >= today_start
+    ).first()
+    if rec_log:
+        rec_log.status = "joined"
+        
     db.commit()
     db.refresh(activity)
     
@@ -290,7 +360,7 @@ def get_activity_candidates(activity_id: int, db: Session = Depends(get_db)):
         if target_type in user_interests:
             score += 0.6
             reasons.append(f"Interested in {target_type}")
-        elif "sports" in user_interests and target_type in ["football", "badminton", "running", "gym"]:
+        elif "sports" in user_interests and target_type in ["football", "badminton", "running", "gym", "swimming"]:
             score += 0.4
             reasons.append("Interested in sports")
             
@@ -331,3 +401,475 @@ def get_activity_candidates(activity_id: int, db: Session = Depends(get_db)):
     # Sort candidates by fit score descending
     candidates.sort(key=lambda x: x["fit_score"], reverse=True)
     return candidates
+
+# --- RECOMMENDATION LOG ENDPOINTS ---
+
+@app.post("/api/recommendations/log", response_model=RecommendationLogResponse)
+def log_recommendation(log_in: RecommendationLogCreate, db: Session = Depends(get_db)):
+    # Avoid duplicate logs for the same user and activity/gym_class recommended today
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    existing = db.query(RecommendationLog).filter(
+        RecommendationLog.user_id == log_in.user_id,
+        RecommendationLog.activity_id == log_in.activity_id,
+        RecommendationLog.gym_class_id == log_in.gym_class_id,
+        RecommendationLog.recommended_at >= today_start
+    ).first()
+    
+    if existing:
+        return existing
+        
+    log = RecommendationLog(
+        user_id=log_in.user_id,
+        activity_id=log_in.activity_id,
+        gym_class_id=log_in.gym_class_id,
+        status="shown"
+    )
+    db.add(log)
+    db.commit()
+    db.refresh(log)
+    return log
+
+@app.put("/api/recommendations/log/{log_id}/status", response_model=RecommendationLogResponse)
+def update_recommendation_status(log_id: int, status_up: RecommendationStatusUpdate, db: Session = Depends(get_db)):
+    log = db.query(RecommendationLog).filter(RecommendationLog.id == log_id).first()
+    if not log:
+        raise HTTPException(status_code=404, detail="Recommendation log not found")
+    log.status = status_up.status
+    db.commit()
+    db.refresh(log)
+    return log
+
+@app.put("/api/recommendations/log/user/{user_id}/status", response_model=List[RecommendationLogResponse])
+def update_recommendation_status_by_user(
+    user_id: int,
+    status_up: RecommendationStatusUpdate,
+    activity_id: Optional[int] = None,
+    gym_class_id: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
+    query = db.query(RecommendationLog).filter(
+        RecommendationLog.user_id == user_id
+    )
+    if activity_id is not None:
+        query = query.filter(RecommendationLog.activity_id == activity_id)
+    if gym_class_id is not None:
+        query = query.filter(RecommendationLog.gym_class_id == gym_class_id)
+    
+    logs = query.all()
+    for log in logs:
+        log.status = status_up.status
+    db.commit()
+    for log in logs:
+        db.refresh(log)
+    return logs
+
+# --- USER EXPERIENCE ENDPOINTS ---
+
+@app.post("/api/users/{user_id}/experiences", response_model=UserExperienceResponse)
+def create_user_experience(user_id: int, exp_in: UserExperienceCreate, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    exp = UserExperience(
+        user_id=user_id,
+        activity_id=exp_in.activity_id,
+        gym_class_id=exp_in.gym_class_id,
+        energy_rating=exp_in.energy_rating,
+        connections_made=exp_in.connections_made,
+        notes=exp_in.notes
+    )
+    exp.communities_enjoyed = exp_in.communities_enjoyed
+    db.add(exp)
+    db.commit()
+    db.refresh(exp)
+    
+    # Trigger status update for recommendation log to 'joined'
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    rec_log = db.query(RecommendationLog).filter(
+        RecommendationLog.user_id == user_id,
+        RecommendationLog.activity_id == exp_in.activity_id,
+        RecommendationLog.gym_class_id == exp_in.gym_class_id,
+        RecommendationLog.recommended_at >= today_start
+    ).first()
+    if rec_log:
+        rec_log.status = "joined"
+        db.commit()
+        
+    return exp
+
+@app.get("/api/users/{user_id}/experiences", response_model=List[UserExperienceResponse])
+def get_user_experiences(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    experiences = db.query(UserExperience).filter(UserExperience.user_id == user_id).all()
+    return experiences
+
+# --- DAILY JOURNAL / FEEDBACK ENDPOINTS ---
+
+def get_current_time() -> datetime:
+    return datetime.now()
+
+def map_custom_activity_type(custom_name: str) -> str:
+    lowered = custom_name.lower()
+    if "foot" in lowered:
+        return "football"
+    if "gym" in lowered:
+        return "gym"
+    if "yoga" in lowered:
+        return "yoga"
+    if "zumba" in lowered:
+        return "zumba"
+    if "combat" in lowered:
+        return "body combat"
+    if "run" in lowered:
+        return "running"
+    if "swim" in lowered or "pool" in lowered:
+        return "swimming"
+    if "board" in lowered or "game" in lowered or "catan" in lowered or "avalon" in lowered:
+        return "board games"
+    if "ai" in lowered or "study" in lowered or "sharing" in lowered:
+        return "ai"
+    if "badminton" in lowered:
+        return "badminton"
+    if "coffee" in lowered:
+        return "coffee"
+    return "other"
+
+@app.get("/api/users/{user_id}/journal/pending", response_model=JournalPendingResponse)
+def get_pending_journal_prompt(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    now = get_current_time()
+    # 21:00 <= now.hour <= 23: target is today
+    # 00:00 <= now.hour < 16: target is yesterday
+    # Otherwise: no prompt
+    if now.hour >= 21:
+        target_date = now.date()
+        prompt_active = True
+    elif now.hour < 16:
+        target_date = (now - timedelta(days=1)).date()
+        prompt_active = True
+    else:
+        prompt_active = False
+        
+    if not prompt_active:
+        return JournalPendingResponse(prompt=False)
+        
+    # Check if journal record already exists
+    existing_journal = db.query(ParticipationJournal).filter(
+        ParticipationJournal.user_id == user_id,
+        ParticipationJournal.journal_date == target_date
+    ).first()
+    
+    if existing_journal:
+        return JournalPendingResponse(prompt=False)
+        
+    # Check if user has an activity they participated in on target_date (between 00:00 and 23:59)
+    start_of_day = datetime(target_date.year, target_date.month, target_date.day, 0, 0, 0)
+    end_of_day = datetime(target_date.year, target_date.month, target_date.day, 23, 59, 59)
+    
+    participated = db.query(ActivityParticipant).join(Activity).filter(
+        ActivityParticipant.user_id == user_id,
+        Activity.start_time >= start_of_day,
+        Activity.start_time <= end_of_day
+    ).first()
+    
+    if participated:
+        # Participation is already known. Auto-resolve it so we don't ask again.
+        new_journal = ParticipationJournal(
+            user_id=user_id,
+            journal_date=target_date,
+            status="resolved_activity",
+            activity_id=participated.activity_id
+        )
+        db.add(new_journal)
+        db.commit()
+        return JournalPendingResponse(prompt=False)
+        
+    # Gather evening options (start_time >= 17:00) on the target_date
+    weekday_name = target_date.strftime("%A")
+    
+    gym_classes = db.query(GymClass).filter(
+        GymClass.active == True,
+        GymClass.weekday.like(f"%{weekday_name}%")
+    ).all()
+    
+    evening_classes = [gc for gc in gym_classes if gc.start_time >= "17:00"]
+    
+    start_evening = datetime(target_date.year, target_date.month, target_date.day, 17, 0, 0)
+    end_evening = datetime(target_date.year, target_date.month, target_date.day, 23, 59, 59)
+    
+    evening_activities = db.query(Activity).filter(
+        Activity.start_time >= start_evening,
+        Activity.start_time <= end_evening
+    ).all()
+    
+    options = []
+    for act in evening_activities:
+        options.append(JournalOption(
+            activity_id=act.id,
+            title=act.title,
+            activity_type=act.activity_type,
+            location=act.location
+        ))
+        
+    for gc in evening_classes:
+        options.append(JournalOption(
+            gym_class_id=gc.id,
+            title=f"Gym Class: {gc.class_name}",
+            activity_type="gym",
+            location=gc.location
+        ))
+        
+    return JournalPendingResponse(
+        prompt=True,
+        target_date=target_date,
+        options=options
+    )
+
+@app.post("/api/users/{user_id}/journal/resolve")
+def resolve_journal_prompt(
+    user_id: int, 
+    req: JournalResolveRequest, 
+    journal_date: Optional[date] = None, 
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    # Determine the target date from current time if not provided
+    if not journal_date:
+        now = get_current_time()
+        if now.hour >= 21:
+            journal_date = now.date()
+        elif now.hour < 16:
+            journal_date = (now - timedelta(days=1)).date()
+        else:
+            raise HTTPException(
+                status_code=400, 
+                detail="No active daily journal window at the current time and no journal_date was provided."
+            )
+            
+    # Check if a journal entry already exists for this date
+    existing_journal = db.query(ParticipationJournal).filter(
+        ParticipationJournal.user_id == user_id,
+        ParticipationJournal.journal_date == journal_date
+    ).first()
+    
+    if existing_journal:
+        return {"success": True, "message": "Already resolved for this date."}
+        
+    # Handle the resolution
+    resolved_activity_type = None
+    
+    new_journal = ParticipationJournal(
+        user_id=user_id,
+        journal_date=journal_date,
+        status=req.status,
+        activity_id=req.activity_id,
+        gym_class_id=req.gym_class_id,
+        custom_activity=req.custom_activity
+    )
+    
+    if req.status == "resolved_activity":
+        # Resolve activity type and register/confirm attendance
+        if req.activity_id:
+            act = db.query(Activity).filter(Activity.id == req.activity_id).first()
+            if not act:
+                raise HTTPException(status_code=404, detail="Selected activity not found")
+            resolved_activity_type = act.activity_type.lower()
+            
+            # Confirm/add participant record
+            existing_participant = db.query(ActivityParticipant).filter(
+                ActivityParticipant.activity_id == req.activity_id,
+                ActivityParticipant.user_id == user_id
+            ).first()
+            if not existing_participant:
+                p = ActivityParticipant(
+                    activity_id=req.activity_id,
+                    user_id=user_id,
+                    source="self_reported"
+                )
+                db.add(p)
+                act.current_participants += 1
+                
+        elif req.gym_class_id:
+            gc = db.query(GymClass).filter(GymClass.id == req.gym_class_id).first()
+            if not gc:
+                raise HTTPException(status_code=404, detail="Selected gym class not found")
+            resolved_activity_type = "gym"
+            
+        elif req.custom_activity:
+            resolved_activity_type = map_custom_activity_type(req.custom_activity)
+            
+    # Save the journal record
+    db.add(new_journal)
+    
+    # Update behavioral interest scores if an activity was resolved
+    if resolved_activity_type:
+        bi = db.query(UserBehavioralInterest).filter(
+            UserBehavioralInterest.user_id == user_id,
+            UserBehavioralInterest.activity_type == resolved_activity_type
+        ).first()
+        if not bi:
+            bi = UserBehavioralInterest(
+                user_id=user_id,
+                activity_type=resolved_activity_type,
+                score=0.0
+            )
+            db.add(bi)
+            
+        bi.score = min(1.0, bi.score + 0.3)
+        bi.last_interacted = datetime.utcnow()
+        
+        # Decay other categories
+        others = db.query(UserBehavioralInterest).filter(
+            UserBehavioralInterest.user_id == user_id,
+            UserBehavioralInterest.activity_type != resolved_activity_type
+        ).all()
+        for other_bi in others:
+            other_bi.score = max(0.0, other_bi.score * 0.8)
+            
+    db.commit()
+    return {"success": True, "message": "Journal response saved successfully."}
+
+# --- HOST NOTIFICATION ENDPOINTS ---
+
+@app.get("/api/users/{user_id}/notifications", response_model=List[NotificationResponse])
+def list_user_notifications(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    return db.query(Notification).filter(
+        Notification.user_id == user_id
+    ).order_by(Notification.created_at.desc()).all()
+
+@app.put("/api/notifications/{notification_id}/read")
+def mark_notification_as_read(notification_id: int, db: Session = Depends(get_db)):
+    notification = db.query(Notification).filter(Notification.id == notification_id).first()
+    if not notification:
+        raise HTTPException(status_code=404, detail="Notification not found")
+        
+    notification.read = True
+    db.commit()
+    return {"success": True, "message": "Notification marked as read."}
+
+import secrets as _secrets
+
+def _generate_token() -> str:
+    return _secrets.token_urlsafe(32)
+
+@app.post("/api/auth/register", response_model=UserLoginResponse)
+def register_user(req: UserLoginRequest, db: Session = Depends(get_db)):
+    existing = db.query(User).filter(User.domain == req.domain).first()
+    if existing:
+        return UserLoginResponse(success=False, message="Domain already registered. Please log in instead.")
+    token = _generate_token()
+    new_user = User(
+        domain=req.domain,
+        password=req.password,
+        is_onboarded=False,
+        title="Employee",
+        session_token=token,
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return UserLoginResponse(
+        success=True,
+        message="Account created. Onboarding required.",
+        user_id=new_user.id,
+        is_onboarded=False,
+        token=token,
+    )
+
+@app.post("/api/auth/login", response_model=UserLoginResponse)
+def login_user(req: UserLoginRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.domain == req.domain).first()
+    if not user:
+        return UserLoginResponse(success=False, message="Domain not found. Please register first.")
+    if user.password != req.password:
+        return UserLoginResponse(success=False, message="Invalid password.")
+    token = _generate_token()
+    user.session_token = token
+    db.commit()
+    return UserLoginResponse(
+        success=True,
+        message="Login successful",
+        user_id=user.id,
+        is_onboarded=user.is_onboarded,
+        token=token,
+    )
+
+@app.get("/api/auth/me", response_model=UserLoginResponse)
+def get_me(token: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.session_token == token).first()
+    if not user:
+        return UserLoginResponse(success=False, message="Invalid or expired session.")
+    return UserLoginResponse(
+        success=True,
+        message="Session valid",
+        user_id=user.id,
+        is_onboarded=user.is_onboarded,
+        token=token,
+    )
+
+@app.post("/api/auth/logout")
+def logout_user(token: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.session_token == token).first()
+    if user:
+        user.session_token = None
+        db.commit()
+    return {"success": True, "message": "Logged out."}
+
+@app.post("/api/dev/reset")
+def dev_reset(db: Session = Depends(get_db)):
+    """Wipes all user data for testing. Gym classes are preserved."""
+    db.query(Notification).delete()
+    db.query(ParticipationJournal).delete()
+    db.query(UserBehavioralInterest).delete()
+    db.query(UserExperience).delete()
+    db.query(RecommendationLog).delete()
+    db.query(ActivityParticipant).delete()
+    db.query(Memory).delete()
+    db.query(Activity).delete()
+    db.query(User).delete()
+    db.commit()
+    return {"success": True, "message": "All user data cleared."}
+
+@app.post("/api/users/{user_id}/onboard", response_model=UserResponse)
+def onboard_user(user_id: int, req: UserOnboardRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    user.full_name = req.full_name
+    user.company = req.company
+    user.org_group = req.org_group
+    user.department = req.department
+    user.squad = req.squad
+    user.interests = req.interests
+    user.is_onboarded = True
+    
+    db.commit()
+    db.refresh(user)
+    
+    return UserResponse(
+        id=user.id,
+        domain=user.domain,
+        full_name=user.full_name,
+        title=user.title or "Employee",
+        company=user.company,
+        org_group=user.org_group,
+        department=user.department,
+        squad=user.squad,
+        interests=user.interests,
+        created_at=user.created_at
+    )

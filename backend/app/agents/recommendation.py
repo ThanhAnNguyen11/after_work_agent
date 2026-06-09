@@ -28,6 +28,10 @@ def generate_recommendation_response(
     3. List the recommended activities in a clean, numbered format in descending order of their suitability.
     4. For each activity, describe its start and end times and location naturally, followed by a concise (1-2 sentences) natural explanation of why it is an interesting opportunity (e.g., connecting with people from specific sibling departments, trying something new to break a routine, or finding a familiar match).
     
+    CRITICAL GROUNDING & COLD START RULES:
+    1. Never invent user history or claim activities the user did not participate in. Recommendations must be grounded in actual data.
+    2. If the user has insufficient participation history or the discovery note flags "Cold Start", acknowledge uncertainty naturally (e.g. "Since you haven't participated in any activities yet, I don't have your preference history to guide recommendations, but here are some popular available activities..."). Do NOT generate personalized insights without evidence. Explain that recommendations will improve as they participate more.
+    
     Example output format:
     Tonight, there are two interesting opportunities worth exploring:
     

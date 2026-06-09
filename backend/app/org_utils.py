@@ -42,7 +42,8 @@ def calculate_recommendation_score(
     user_history: List[Activity], 
     participants: List[User] = None,
     creator: User = None,
-    user_query: str = ""
+    user_query: str = "",
+    db: Any = None
 ) -> Dict[str, Any]:
     """
     Calculate the recommendation score based on the formula:
@@ -69,28 +70,47 @@ def calculate_recommendation_score(
     # Clean user interests
     user_interests = [i.strip().lower() for i in user.interests]
     
+    act_type = "gym" if is_gym_class else activity_or_class.activity_type.lower()
+    
+    # Static declared match
+    declared_match = 0.0
     if is_gym_class:
         class_name = activity_or_class.class_name.lower()
-        # Direct match: class name in user interests (e.g. "yoga")
         if class_name in user_interests:
-            interest_match = 1.0
-        # If user is interested in "gym" in general, but this is a gym class
+            declared_match = 1.0
         elif "gym" in user_interests:
-            interest_match = 0.8
-        else:
-            interest_match = 0.0
+            declared_match = 0.8
     else:
-        act_type = activity_or_class.activity_type.lower()
         if act_type in user_interests:
-            interest_match = 1.0
-        # Check if the title has any interest words
+            declared_match = 1.0
         elif any(interest in activity_or_class.title.lower() for interest in user_interests):
-            interest_match = 0.8
-        # If it's a sports activity (e.g., football) and user likes "sports"
-        elif act_type == "football" and "sports" in user_interests:
-            interest_match = 0.9
-        else:
-            interest_match = 0.0
+            declared_match = 0.8
+        elif act_type in ["football", "swimming", "badminton", "running", "gym"] and "sports" in user_interests:
+            declared_match = 0.9
+
+    # Behavioral match score
+    behavioral_score = 0.0
+    if db is not None:
+        from backend.app.models import UserBehavioralInterest
+        beh_interest = db.query(UserBehavioralInterest).filter(
+            UserBehavioralInterest.user_id == user.id,
+            UserBehavioralInterest.activity_type == act_type
+        ).first()
+        if beh_interest:
+            behavioral_score = beh_interest.score
+
+    # Determine dynamic weights based on actual participation history size
+    history_count = len(user_history) if user_history else 0
+    if history_count >= 3:
+        # Behavioral matches gradually outweigh profile settings (declared interests)
+        w_behavioral = min(0.8, history_count * 0.1)
+        w_declared = 1.0 - w_behavioral
+    else:
+        # Cold start: rely entirely on declared static preferences
+        w_behavioral = 0.0
+        w_declared = 1.0
+
+    interest_match = w_declared * declared_match + w_behavioral * behavioral_score
 
     # 2. Activity Relevance (History)
     # Calculate what fraction of user's past activities match this type

@@ -82,6 +82,8 @@ class OpenRouterClient:
                 activity_type = "coffee"
             elif "badminton" in lowered_text:
                 activity_type = "badminton"
+            elif "swim" in lowered_text or "pool" in lowered_text:
+                activity_type = "swimming"
             elif "ai" in lowered_text or "study" in lowered_text:
                 activity_type = "ai"
 
@@ -137,45 +139,89 @@ class OpenRouterClient:
                 return "The user loves playing football and likes to join sports."
             return "The user is exploring activities outside their team."
 
-        # 5. Recommendation Agent
         else:
-            if "yoga class" in user_prompt.lower() or "try yoga" in user_prompt.lower():
-                return (
-                    "You should definitely try a Yoga class! It's a wonderful way to build flexibility, relax, and connect with colleagues in a low-pressure environment.\n\n"
-                    "We have a **Gym Class: Yoga** session coming up on Monday, Wednesday, and Friday from 12:00 to 13:00 (Location: Upfit VNG Studio Room A) with instructor Ngọc. It's a beginner-friendly class, and since you're interested in health and wellness, it would be a perfect opportunity to try it out!"
-                )
-            elif "tomorrow" in user_prompt.lower() or "monday" in user_prompt.lower():
-                return (
-                    "Tonight, there are two interesting opportunities worth exploring:\n\n"
-                    "1. **Gym Class: Yoga** from 12:00 to 13:00 (Location: Upfit VNG Studio Room A). It is a great flexibility workout matching your interest in health.\n"
-                    "2. **Catan & Avalon Board Game Night** from 18:00 to 20:00 (Location: Pantry Area 2nd Floor). This is a fun board game session hosted by HR."
-                )
-            elif "bored" in user_prompt.lower() or "routine trap = true" in user_prompt.lower():
-                return (
-                    "⚡ **UNCOMFORT ZONE PASS ACTIVATED** ⚡\n"
-                    "Nguyen, you have attended Gym 5 times in a row! Master level achieved. Tonight, we challenge you to break the loop by exploring other communities:\n\n"
-                    "1. **Football Friendly Match 7v7** from 18:00 to 19:00 (Location: Z-Plex Football Field). A casual game with colleagues outside your immediate squad.\n"
-                    "2. **AI Sharing: Large Language Models** from 18:30 to 19:30 (Location: Meeting Room 3A). It features participants from Data Platform and Business teams, which is a great chance to learn something new."
-                )
-            elif "new employee" in user_prompt.lower() or "onboard" in user_prompt.lower() or "minhhoang" in user_prompt.lower():
-                return (
-                    "Welcome to the team! Based on your profile, here are the recommendations for you:\n\n"
-                    "1. **AI Sharing: Large Language Models** from 18:30 to 19:30 (Location: Meeting Room 3A). A great way to connect with the tech community outside PCT.\n"
-                    "2. **Gym Class: Running Club** on Wednesday from 18:00 to 19:00 (Location: Office Lobby). A fun, low-pressure way to hang out with members from your division."
-                )
-            elif "football" in user_prompt.lower():
-                return (
-                    "Here are the football matches:\n\n"
-                    "1. **Football Friendly Match 7v7** from 18:00 to 19:00 (Location: Z-Plex Football Field). Casual friendly match hosted by the TEP squad."
-                )
+            # Extract user query
+            user_query = ""
+            query_match = re.search(r"User Query:\s*(.*)", user_prompt, re.IGNORECASE)
+            if query_match:
+                user_query = query_match.group(1).lower()
+
+            # Extract given name dynamically from user_prompt
+            given_name = "User"
+            name_match = re.search(r"User:\s*([^(\n]+)", user_prompt)
+            if name_match:
+                full_name = name_match.group(1).strip()
+                given_name = full_name.split()[-1]
+
+            is_cold_start = "cold start" in user_prompt.lower()
+
+            if is_cold_start:
+                if "yoga class" in user_query or "try yoga" in user_query:
+                    return (
+                        "I don't have your activity history yet since you haven't joined any activities, but here is a popular option to start:\n\n"
+                        "We have a beginner-friendly **Gym Class: Yoga** session coming up on Monday, Wednesday, and Friday from 12:00 to 13:00 (Location: Upfit VNG Studio Room A) with instructor Ngọc. It's a great opportunity to relax and connect with colleagues!"
+                    )
+                elif "swim" in user_query or "pool" in user_query:
+                    return (
+                        "The company swimming pool is open free for all employees! Since I don't have your preference history yet, this is a great free activity to start with.\n\n"
+                        "We have a recurring **Swimming Session** scheduled Monday through Friday from 06:00 to 20:00 (Location: Company Swimming Pool). No reservation required, just jump in!"
+                    )
+                elif "tomorrow" in user_query or "monday" in user_query:
+                    return (
+                        "Since you haven't participated in any activities yet, I don't have your preference history to guide recommendations, but here are some popular options for tomorrow:\n\n"
+                        "1. **Gym Class: Yoga** from 12:00 to 13:00 (Location: Upfit VNG Studio Room A). It is a beginner-friendly flexibility session.\n"
+                        "2. **Catan & Avalon Board Game Night** from 18:00 to 20:00 (Location: Pantry Area 2nd Floor). This is a fun board game session hosted by HR."
+                    )
+                else:
+                    return (
+                        "Welcome! Since you haven't participated in any activities yet, I don't have your preference history to guide recommendations, but here are some popular available options:\n\n"
+                        "1. **Football Friendly Match 7v7** from 18:00 to 19:00 (Location: Z-Plex Football Field). This is a casual game matching your sports interest.\n"
+                        "2. **AI Sharing: Large Language Models in Production** from 18:30 to 19:30 (Location: Meeting Room 3A). This features data scientists and engineers sharing production experience.\n"
+                        "3. **Gym Class: Yoga** from 18:00 to 19:00 (Location: Upfit VNG Studio Room A). A beginner-friendly flexibility session with instructor Ngọc."
+                    )
             else:
-                # Standard recommendation response
-                return (
-                    "Tonight, there are three interesting activities worth exploring:\n\n"
-                    "1. **Football Friendly Match 7v7** from 18:00 to 19:00 (Location: Z-Plex Football Field). This is a casual game matching your sports interest.\n"
-                    "2. **AI Sharing: Large Language Models in Production** from 18:30 to 19:30 (Location: Meeting Room 3A). This features data scientists and engineers sharing production experience.\n"
-                    "3. **Gym Class: Yoga** from 18:00 to 19:00 (Location: Upfit VNG Studio Room A). Flexibility session with instructor Ngọc."
-                )
+                if "yoga class" in user_query or "try yoga" in user_query:
+                    return (
+                        "You should definitely try a Yoga class! It's a wonderful way to build flexibility, relax, and connect with colleagues in a low-pressure environment.\n\n"
+                        "We have a **Gym Class: Yoga** session coming up on Monday, Wednesday, and Friday from 12:00 to 13:00 (Location: Upfit VNG Studio Room A) with instructor Ngọc. It's a beginner-friendly class, and since you're interested in health and wellness, it would be a perfect opportunity to try it out!"
+                    )
+                elif "tomorrow" in user_query or "monday" in user_query:
+                    return (
+                        "Tonight, there are two interesting opportunities worth exploring:\n\n"
+                        "1. **Gym Class: Yoga** from 12:00 to 13:00 (Location: Upfit VNG Studio Room A). It is a great flexibility workout matching your interest in health.\n"
+                        "2. **Catan & Avalon Board Game Night** from 18:00 to 20:00 (Location: Pantry Area 2nd Floor). This is a fun board game session hosted by HR."
+                    )
+                elif "swim" in user_query or "pool" in user_query:
+                    return (
+                        "The company swimming pool is open free for all employees! It's a great way to unwind, stay fit, and meet colleagues.\n\n"
+                        "We have a recurring **Swimming Session** scheduled Monday through Friday from 06:00 to 20:00 (Location: Company Swimming Pool). No reservation required, just jump in!"
+                    )
+                elif "bored" in user_query or "routine trap = true" in user_prompt.lower():
+                    return (
+                        "⚡ **UNCOMFORT ZONE PASS ACTIVATED** ⚡\n"
+                        f"{given_name}, you have attended Gym 5 times in a row! Master level achieved. Tonight, we challenge you to break the loop by exploring other communities:\n\n"
+                        "1. **Football Friendly Match 7v7** from 18:00 to 19:00 (Location: Z-Plex Football Field). A casual game with colleagues outside your immediate squad.\n"
+                        "2. **AI Sharing: Large Language Models** from 18:30 to 19:30 (Location: Meeting Room 3A). It features participants from Data Platform and Business teams, which is a great chance to learn something new."
+                    )
+                elif "new employee" in user_query or "onboard" in user_query or "minhhoang" in user_prompt.lower():
+                    return (
+                        "Welcome to the team! Based on your profile, here are the recommendations for you:\n\n"
+                        "1. **AI Sharing: Large Language Models** from 18:30 to 19:30 (Location: Meeting Room 3A). A great way to connect with the tech community outside PCT.\n"
+                        "2. **Gym Class: Running Club** on Wednesday from 18:00 to 19:00 (Location: Office Lobby). A fun, low-pressure way to hang out with members from your division."
+                    )
+                elif "football" in user_query:
+                    return (
+                        "Here are the football matches:\n\n"
+                        "1. **Football Friendly Match 7v7** from 18:00 to 19:00 (Location: Z-Plex Football Field). Casual friendly match hosted by the TEP squad."
+                    )
+                else:
+                    # Standard recommendation response
+                    return (
+                        "Tonight, there are three interesting activities worth exploring:\n\n"
+                        "1. **Football Friendly Match 7v7** from 18:00 to 19:00 (Location: Z-Plex Football Field). This is a casual game matching your sports interest.\n"
+                        "2. **AI Sharing: Large Language Models in Production** from 18:30 to 19:30 (Location: Meeting Room 3A). This features data scientists and engineers sharing production experience.\n"
+                        "3. **Gym Class: Yoga** from 18:00 to 19:00 (Location: Upfit VNG Studio Room A). Flexibility session with instructor Ngọc."
+                    )
 
 # Single instance client
 llm_client = OpenRouterClient()

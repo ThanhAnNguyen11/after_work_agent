@@ -7,8 +7,8 @@ def run_discovery_agent(user_name: str, interests: List[str], history: List[Acti
     Analyzes the user's activity history and interests.
     Determines if they are stuck in a routine (e.g., gym-only) and suggests exploratory directions.
     """
-    if not history:
-        return "New employee: Encourage general exploration across different department socials and technical groups."
+    if not history or len(history) < 3:
+        return "Cold Start: Insufficient history to infer habits. Recommendations are based on declared interests and available events."
 
     # Programmatic detection of routine traps
     types = [act.activity_type.lower() for act in history]
