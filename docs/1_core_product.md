@@ -243,3 +243,5 @@ Possible responses:
 The answer is stored as participation history.
 
 The same day must never be asked twice.
+
+Hello World!
