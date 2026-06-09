@@ -1,9 +1,8 @@
-from datetime import datetime, timedelta
 import json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from backend.app.config import settings
-from backend.app.models import Base, User, GymClass, Activity, ActivityParticipant, Memory, RecommendationLog, UserExperience, UserBehavioralInterest, ParticipationJournal, Notification
+from backend.app.models import Base, User, GymClass, RecommendationLog, UserExperience, UserBehavioralInterest, ParticipationJournal, Notification
 
 # For SQLite, we use connect_args={"check_same_thread": False} to allow multi-threaded access
 engine = create_engine(settings.DATABASE_URL, connect_args={"check_same_thread": False})
@@ -225,108 +224,6 @@ def init_db():
         for g in gym_classes_data:
             gym_class = GymClass(**g)
             db.add(gym_class)
-
-        # 3. Seed Activities (Dynamic Activities)
-        # Tonight's Date (we'll set it to current date at specific times)
-        now = datetime.now()
-        tonight_6pm = datetime(now.year, now.month, now.day, 18, 0)
-        tonight_630pm = datetime(now.year, now.month, now.day, 18, 30)
-
-        # Activity 1: Football Friendly Match (Scenario 5 & 1)
-        # Needs 2 more players (limit 10, current 8)
-        act1 = Activity(
-            title="Football Friendly Match 7v7",
-            description="Casual game. Need 2 more players to complete the teams.",
-            activity_type="football",
-            start_time=tonight_6pm,
-            end_time=tonight_6pm + timedelta(hours=1),
-            location="Z-Plex Football Field",
-            participant_limit=10,
-            current_participants=8,
-            created_by=seeded_users["binhnd2"].id
-        )
-        db.add(act1)
-        db.flush()
-
-        # Add participants to Activity 1
-        # binhnd2 is creator & participant, cuonglm is participant
-        participants_act1 = [
-            seeded_users["binhnd2"].id,
-            seeded_users["cuonglm"].id,
-        ]
-        # Seed extra simulated users who are participants
-        for u_id in participants_act1:
-            p = ActivityParticipant(activity_id=act1.id, user_id=u_id)
-            db.add(p)
-
-        # Activity 2: AI Study Group / Sharing Session (Scenario 1 & 4)
-        act2 = Activity(
-            title="AI Sharing: Large Language Models in Production",
-            description="Discussing prompt engineering, retrieval augmented generation, and deploy pipelines.",
-            activity_type="ai",
-            start_time=tonight_630pm,
-            end_time=tonight_630pm + timedelta(hours=1),
-            location="Meeting Room 3A (TEP wing)",
-            participant_limit=15,
-            current_participants=3,
-            created_by=seeded_users["cuonglm"].id
-        )
-        db.add(act2)
-        db.flush()
-
-        # Add participants: cuonglm (Data Platform) and duongnt (Partnership)
-        participants_act2 = [
-            seeded_users["cuonglm"].id,
-            seeded_users["duongnt"].id,
-        ]
-        for u_id in participants_act2:
-            p = ActivityParticipant(activity_id=act2.id, user_id=u_id)
-            db.add(p)
-
-        # Activity 3: Board Game Night (Scenario 3)
-        act3 = Activity(
-            title="Catan & Avalon Board Game Night",
-            description="Weekly board game gather. Everyone is welcome!",
-            activity_type="board games",
-            start_time=tonight_6pm + timedelta(days=1), # Tomorrow
-            end_time=tonight_6pm + timedelta(days=1) + timedelta(hours=2),
-            location="Pantry Area 2nd Floor",
-            participant_limit=8,
-            current_participants=1,
-            created_by=seeded_users["lannt"].id
-        )
-        db.add(act3)
-        db.flush()
-        db.add(ActivityParticipant(activity_id=act3.id, user_id=seeded_users["lannt"].id))
-
-        # 4. Seed Historical Participation for annt7 to create a "Routine Trap" (Gym, Gym, Gym)
-        # This will trigger Scenario 3 & Discovery Agent
-        for i in range(1, 6):
-            past_date = now - timedelta(days=i)
-            # Create a past finished activity
-            past_act = Activity(
-                title=f"Gym Session Day {i}",
-                description="Regular workout.",
-                activity_type="gym",
-                start_time=past_date,
-                end_time=past_date + timedelta(hours=1),
-                location="Company Gym",
-                participant_limit=5,
-                current_participants=1,
-                created_by=seeded_users["annt7"].id,
-                created_at=past_date
-            )
-            db.add(past_act)
-            db.flush()
-            db.add(ActivityParticipant(activity_id=past_act.id, user_id=seeded_users["annt7"].id))
-
-        # 5. Add initial memories for annt7
-        m1 = Memory(
-            user_id=seeded_users["annt7"].id,
-            content="I usually go to the gym after work to keep fit.",
-            created_at=now - timedelta(days=3)
-        )
-        db.add(m1)
 
         db.commit()
         print("Database seeding completed.")

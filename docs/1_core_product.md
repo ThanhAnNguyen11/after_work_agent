@@ -216,30 +216,3 @@ Store:
 This becomes participation history.
 
 Participation history is later used to improve recommendations.
-
----
-
-## 6. Participation Follow-up
-
-If participation for a day has not been recorded:
-
-Between:
-
-* 21:00 on the same day
-* 16:00 on the following day
-
-When the user opens the application:
-
-The agent asks:
-
-> What did you do yesterday evening?
-
-Possible responses:
-
-* Joined recommended activity
-* Joined another activity
-* No activity
-
-The answer is stored as participation history.
-
-The same day must never be asked twice.

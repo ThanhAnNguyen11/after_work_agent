@@ -189,3 +189,7 @@ class UserOnboardRequest(BaseModel):
     department: str
     squad: Optional[str] = None
     interests: List[str] = []
+
+class ConversationStarterResponse(BaseModel):
+    type: str  # "participation_followup" | "welcome"
+    message: str

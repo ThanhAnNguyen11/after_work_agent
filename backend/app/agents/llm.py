@@ -174,10 +174,10 @@ class OpenRouterClient:
                     )
                 else:
                     return (
-                        "Welcome! Since you haven't participated in any activities yet, I don't have your preference history to guide recommendations, but here are some popular available options:\n\n"
-                        "1. **Football Friendly Match 7v7** from 18:00 to 19:00 (Location: Z-Plex Football Field). This is a casual game matching your sports interest.\n"
-                        "2. **AI Sharing: Large Language Models in Production** from 18:30 to 19:30 (Location: Meeting Room 3A). This features data scientists and engineers sharing production experience.\n"
-                        "3. **Gym Class: Yoga** from 18:00 to 19:00 (Location: Upfit VNG Studio Room A). A beginner-friendly flexibility session with instructor Ngọc."
+                        "I don't know much about your preferences yet, so I'll recommend based on your interests and activities happening today.\n\n"
+                        "1. **Gym Class: Yoga** from 18:00 to 19:00 (Location: Upfit VNG Studio Room A). A beginner-friendly flexibility session with instructor Ngọc.\n"
+                        "2. **Gym Class: Body Fit** from 18:00 to 19:00 (Location: Upfit VNG Studio Room B). A strength and conditioning workout with instructor Shindo.\n"
+                        "3. **Swimming Session** from 06:00 to 20:00 (Location: Company Swimming Pool). Open for all employees, no reservation needed."
                     )
             else:
                 if "yoga class" in user_query or "try yoga" in user_query:
@@ -198,10 +198,9 @@ class OpenRouterClient:
                     )
                 elif "bored" in user_query or "routine trap = true" in user_prompt.lower():
                     return (
-                        "⚡ **UNCOMFORT ZONE PASS ACTIVATED** ⚡\n"
-                        f"{given_name}, you have attended Gym 5 times in a row! Master level achieved. Tonight, we challenge you to break the loop by exploring other communities:\n\n"
-                        "1. **Football Friendly Match 7v7** from 18:00 to 19:00 (Location: Z-Plex Football Field). A casual game with colleagues outside your immediate squad.\n"
-                        "2. **AI Sharing: Large Language Models** from 18:30 to 19:30 (Location: Meeting Room 3A). It features participants from Data Platform and Business teams, which is a great chance to learn something new."
+                        f"{given_name}, you've been going to the gym a lot lately — maybe tonight is a good chance to try something different.\n\n"
+                        "1. **Gym Class: Fitness Dance** from 18:00 to 19:00 (Location: Upfit VNG Studio Room A). A fun cardio session with a completely different energy — good way to meet people outside your squad.\n"
+                        "2. **Swimming Session** from 06:00 to 20:00 (Location: Company Swimming Pool). A relaxing option if you want to unwind and bump into colleagues from other teams."
                     )
                 elif "new employee" in user_query or "onboard" in user_query or "minhhoang" in user_prompt.lower():
                     return (
@@ -211,16 +210,14 @@ class OpenRouterClient:
                     )
                 elif "football" in user_query:
                     return (
-                        "Here are the football matches:\n\n"
-                        "1. **Football Friendly Match 7v7** from 18:00 to 19:00 (Location: Z-Plex Football Field). Casual friendly match hosted by the TEP squad."
+                        "There are no football matches currently scheduled. You can create one by posting a message like: \"Football at 6PM, need 5 more players\" and the agent will register it automatically!"
                     )
                 else:
-                    # Standard recommendation response
                     return (
-                        "Tonight, there are three interesting activities worth exploring:\n\n"
-                        "1. **Football Friendly Match 7v7** from 18:00 to 19:00 (Location: Z-Plex Football Field). This is a casual game matching your sports interest.\n"
-                        "2. **AI Sharing: Large Language Models in Production** from 18:30 to 19:30 (Location: Meeting Room 3A). This features data scientists and engineers sharing production experience.\n"
-                        "3. **Gym Class: Yoga** from 18:00 to 19:00 (Location: Upfit VNG Studio Room A). Flexibility session with instructor Ngọc."
+                        "There are a few options worth checking out tonight:\n\n"
+                        "1. **Gym Class: Yoga** from 18:00 to 19:00 (Location: Upfit VNG Studio Room A). Flexibility session with instructor Ngọc.\n"
+                        "2. **Gym Class: Body Fit** from 18:00 to 19:00 (Location: Upfit VNG Studio Room B). Strength and conditioning with instructor Shindo.\n"
+                        "3. **Swimming Session** from 06:00 to 20:00 (Location: Company Swimming Pool). Open for all employees, no reservation needed."
                     )
 
 # Single instance client

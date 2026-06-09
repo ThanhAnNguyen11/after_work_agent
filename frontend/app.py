@@ -122,6 +122,8 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "interests_input" not in st.session_state:
     st.session_state.interests_input = ""
+if "conversation_started" not in st.session_state:
+    st.session_state.conversation_started = False
 
 # --- AUTO-RESTORE SESSION ---
 if "logged_in_user_id" not in st.session_state:
@@ -356,7 +358,7 @@ with st.sidebar:
             res = api_client.dev_reset()
             if res.get("success"):
                 _clear_session()
-                for key in ["logged_in_user_id", "is_onboarded", "session_token", "chat_history"]:
+                for key in ["logged_in_user_id", "is_onboarded", "session_token", "chat_history", "conversation_started"]:
                     st.session_state.pop(key, None)
                 st.success("All data cleared. Redirecting to login...")
                 st.rerun()
@@ -373,6 +375,7 @@ with st.sidebar:
             del st.session_state.is_onboarded
         st.session_state.pop("session_token", None)
         st.session_state.chat_history = []
+        st.session_state.conversation_started = False
         st.rerun()
 
     st.markdown("---")
@@ -454,7 +457,13 @@ if current_user:
 # --- PAGE 1: CHAT ASSISTANT ---
 if page == "💬 Chat Assistant" and current_user:
     st.header("💬 Discover Tonight's Activities")
-    
+
+    # Conversation Starter: inject first message on fresh chat
+    if not st.session_state.conversation_started and not st.session_state.chat_history:
+        starter = api_client.get_conversation_starter(current_user["id"])
+        st.session_state.chat_history.append({"role": "assistant", "content": starter["message"]})
+        st.session_state.conversation_started = True
+
     # Showcase examples
     st.markdown("### Try these questions:")
     col1, col2, col3 = st.columns(3)

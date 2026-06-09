@@ -7,13 +7,14 @@ from datetime import datetime, timedelta, date
 from backend.app.database import get_db, init_db
 from backend.app.models import User, Activity, GymClass, ActivityParticipant, Memory, RecommendationLog, UserExperience, UserBehavioralInterest, ParticipationJournal, Notification
 from backend.app.schemas import (
-    UserCreate, UserResponse, ActivityCreate, ActivityResponse, 
+    UserCreate, UserResponse, ActivityCreate, ActivityResponse,
     GymClassResponse, MemoryResponse, ChatRequest, ChatResponse,
     JoinActivityRequest, JoinActivityResponse,
     RecommendationLogCreate, RecommendationLogResponse, RecommendationStatusUpdate,
     UserExperienceCreate, UserExperienceResponse,
     JournalOption, JournalPendingResponse, JournalResolveRequest, NotificationResponse,
-    UserLoginRequest, UserLoginResponse, UserOnboardRequest
+    UserLoginRequest, UserLoginResponse, UserOnboardRequest,
+    ConversationStarterResponse
 )
 from backend.app.agents.graph import run_agent_flow
 from backend.app.org_utils import organization_distance
@@ -828,6 +829,65 @@ def logout_user(token: str, db: Session = Depends(get_db)):
         user.session_token = None
         db.commit()
     return {"success": True, "message": "Logged out."}
+
+@app.get("/api/users/{user_id}/conversation-starter", response_model=ConversationStarterResponse)
+def get_conversation_starter(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    now = get_current_time()
+
+    # Priority 1: unresolved participation exists
+    if now.hour >= 21:
+        target_date = now.date()
+        prompt_active = True
+    elif now.hour < 16:
+        target_date = (now - timedelta(days=1)).date()
+        prompt_active = True
+    else:
+        prompt_active = False
+
+    if prompt_active:
+        existing_journal = db.query(ParticipationJournal).filter(
+            ParticipationJournal.user_id == user_id,
+            ParticipationJournal.journal_date == target_date
+        ).first()
+
+        if not existing_journal:
+            start_of_day = datetime(target_date.year, target_date.month, target_date.day, 0, 0, 0)
+            end_of_day = datetime(target_date.year, target_date.month, target_date.day, 23, 59, 59)
+            participated = db.query(ActivityParticipant).join(Activity).filter(
+                ActivityParticipant.user_id == user_id,
+                Activity.start_time >= start_of_day,
+                Activity.start_time <= end_of_day
+            ).first()
+
+            if not participated:
+                return ConversationStarterResponse(
+                    type="participation_followup",
+                    message="What did you do yesterday evening?"
+                )
+
+    # Priority 2: contextual welcome
+    hour = now.hour
+    interests = user.interests or []
+
+    if hour < 12:
+        action_hint = "Planning something after work today?"
+    elif hour < 17:
+        action_hint = "Looking for something to do this evening?"
+    else:
+        action_hint = "Looking for something to do tonight?"
+
+    if interests:
+        interest_hint = f" You're into {interests[0]} — want me to check what's on?"
+    else:
+        interest_hint = " Want me to show you what activities are available?"
+
+    message = f"{action_hint}{interest_hint}"
+    return ConversationStarterResponse(type="welcome", message=message)
+
 
 @app.post("/api/dev/reset")
 def dev_reset(db: Session = Depends(get_db)):
