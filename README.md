@@ -4,6 +4,14 @@ A complete hackathon MVP for an intelligent **After Work Activity Discovery Agen
 
 ---
 
+## North Star
+
+Help employees discover and join after-work activities happening inside the company.
+
+The goal is to make activities easier to discover, easier to join, and help employees connect with more communities.
+
+---
+
 ## 🌟 Key Product Capabilities
 
 1. **Intelligent Recommendations (Scenario 1)**: Suggests activities matching user profile interests, attendance history, scheduled classes, and organizational peers.
@@ -33,13 +41,12 @@ after-work-agent/
 ├── entrypoint.sh            # Runs backend & frontend servers in parallel
 ├── README.md                # Main readme
 ├── database.db              # SQLite Database (Auto-created on startup)
-├── docs/                    # Modularized blueprint & specs
-│   ├── AFTER_WORK_AGENT_BLUEPRINT.md  # Main blueprint entrypoint index
+├── docs/                    # Product specs & agent behavior
 │   ├── 1_core_product.md    # Auth, onboarding, interests & core features
 │   ├── 2_activity_lifecycle.md # Creation, guidelines, join flow & full capacity
 │   ├── 3_data_model.md      # Database tables and fields specification
-│   ├── 4_agent_responsibilities.md # LangGraph agent inputs/outputs
-│   └── 5_system_prompts.md  # System rules, cold start & grounding prompts
+│   ├── 4_agent_capabilities.md # Agent inputs/outputs (6 agents)
+│   └── 5_system_prompts.md  # Agent identity, tone & grounding rules
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py
@@ -66,25 +73,13 @@ after-work-agent/
 
 ---
 
-## 🧮 Algorithms & Formulae
+## 📚 Documentation
 
-### Organizational Distance
-Closeness between two employees is scored based on the hierarchy:
-- **Same Squad**: `1.0`
-- **Same Department**: `0.8`
-- **Same Group**: `0.5`
-- **Cross Group**: `0.2`
-- **Cross Company**: `0.0`
-
-### Weighted Recommendation Score
-Every upcoming class or dynamic activity is scored before presentation using the formula:
-
-$$\text{score} = 0.4 \times \text{interest\_match} + 0.3 \times \text{activity\_relevance} + 0.2 \times \text{social\_connection} + 0.1 \times \text{discovery\_score}$$
-
-- **`interest_match`**: Direct tag match (`1.0`) or semantic category match (`0.8`).
-- **`activity_relevance`**: Ratio of attendance history matching the activity type.
-- **`social_connection`**: Average organizational closeness to registered peers.
-- **`discovery_score`**: Inverse of activity relevance (`1.0 - relevance`), prioritizing new categories to break routines.
+1. [Core Product & Features](docs/1_core_product.md)
+2. [Activity Lifecycle](docs/2_activity_lifecycle.md)
+3. [Data Model](docs/3_data_model.md)
+4. [Agent Capabilities](docs/4_agent_capabilities.md)
+5. [Agent Behavior](docs/5_system_prompts.md)
 
 ---
 
