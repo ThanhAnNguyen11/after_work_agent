@@ -22,7 +22,7 @@ class UserResponse(UserBase):
     class Config:
         from_attributes = True
 
-class GymClassResponse(BaseModel):
+class FixedActivityResponse(BaseModel):
     id: int
     class_name: str
     description: Optional[str] = None
@@ -32,6 +32,7 @@ class GymClassResponse(BaseModel):
     location: str
     capacity: int
     instructor: Optional[str] = None
+    guidelines: Optional[str] = None
     active: bool
 
     class Config:

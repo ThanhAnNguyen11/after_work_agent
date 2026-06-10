@@ -1,0 +1,13 @@
+.env
+database.db
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+.git
+.gitignore
+.greennode.json
+*.log
+.agentbase
+.agentbase-state.json
+.agentbase/

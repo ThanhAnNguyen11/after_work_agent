@@ -6,7 +6,7 @@ from datetime import datetime
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from backend.app.database import init_db, SessionLocal
-from backend.app.models import User, Activity, GymClass, ActivityParticipant, Memory, RecommendationLog, UserExperience
+from backend.app.models import User, Activity, FixedActivity, ActivityParticipant, Memory, RecommendationLog, UserExperience
 from backend.app.org_utils import organization_distance, calculate_recommendation_score
 from backend.app.agents.extraction import extract_activity_from_text
 from backend.app.agents.graph import run_agent_flow
@@ -87,7 +87,7 @@ def test_recommendation_scoring():
         print(f"Football Match Scores: {fb_score}")
         
         # Score Gym Class Yoga
-        yoga_class = db.query(GymClass).filter(GymClass.class_name == "Yoga").first()
+        yoga_class = db.query(FixedActivity).filter(FixedActivity.class_name == "Yoga").first()
         yoga_score = calculate_recommendation_score(
             user=annt7,
             activity_or_class=yoga_class,
@@ -300,7 +300,7 @@ def test_cold_start_and_behavioral_learning():
         db.commit()
         
         # Calculate score for gym activity
-        gym_class = db.query(GymClass).filter(GymClass.class_name == "Yoga").first() # gym class type is gym
+        gym_class = db.query(FixedActivity).filter(FixedActivity.class_name == "Yoga").first() # gym class type is gym
         score_warm = calculate_recommendation_score(
             user=new_user,
             activity_or_class=gym_class,
@@ -422,7 +422,7 @@ def test_journal_prompting_and_feedback():
         assert bi.score == 0.3, f"Expected behavioral score 0.3, got {bi.score}"
         
         # Now resolve another activity and verify decay
-        gym_class = db.query(GymClass).filter(GymClass.class_name == "Yoga").first()
+        gym_class = db.query(FixedActivity).filter(FixedActivity.class_name == "Yoga").first()
         resolve_req_gym = JournalResolveRequest(
             status="resolved_activity",
             gym_class_id=gym_class.id

@@ -7,28 +7,24 @@ from backend.app.config import settings
 
 class OpenRouterClient:
     def __init__(self):
-        self.api_key = settings.OPENROUTER_API_KEY
-        self.model = settings.OPENROUTER_MODEL
-        
+        self.api_key = settings.AI_PLATFORM_API_KEY
+        self.model = settings.AI_PLATFORM_MODEL
+
         if self.api_key:
-            # OpenRouter is OpenAI-compatible
+            # VNG Cloud AI Platform is OpenAI-compatible
             self.llm = ChatOpenAI(
-                openai_api_base=settings.OPENROUTER_API_BASE,
+                openai_api_base=settings.AI_PLATFORM_API_BASE,
                 openai_api_key=self.api_key,
                 model_name=self.model,
                 temperature=0.2,
                 max_tokens=1000,
                 timeout=5.0,
-                default_headers={
-                    "HTTP-Referer": "https://github.com/google/antigravity",
-                    "X-Title": "After Work Agent Hackathon"
-                }
             )
             self.is_mock = False
         else:
             self.llm = None
             self.is_mock = True
-            print("WARNING: OPENROUTER_API_KEY not found. Running in local MOCK mode.")
+            print("WARNING: AI_PLATFORM_API_KEY not found. Running in local MOCK mode.")
 
     def run_agent(self, system_prompt: str, user_prompt: str, expected_format: str = "text") -> str:
         """
@@ -44,7 +40,7 @@ class OpenRouterClient:
                 response = self.llm.invoke(messages)
                 return response.content
             except Exception as e:
-                print(f"Error calling OpenRouter API: {e}. Falling back to Mock Mode permanently.")
+                print(f"Error calling VNG Cloud AI Platform API: {e}. Falling back to Mock Mode permanently.")
                 self.is_mock = True
                 # fall through to mock
         

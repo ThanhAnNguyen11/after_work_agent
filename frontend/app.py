@@ -218,13 +218,13 @@ if not st.session_state.get("is_onboarded", True):
             with col_bu:
                 company = st.selectbox("Business Unit", ["PY", "ZA", "Game", "GreenNode", "Other"])
             with col_grp:
-                org_group = st.selectbox("Group", ["TEP", "BIZ", "OPS"])
+                org_group = st.selectbox("Group", ["TEP", "BIZ", "OPS", "Other"])
                 
             col_dept, col_sqd = st.columns(2)
             with col_dept:
-                department = st.selectbox("Department", ["PCT", "Data Platform", "Partnership", "Business"])
+                department = st.selectbox("Department", ["PCT", "PGE", "PCP", "DGS", "DLS", "MBS", "ZPO", "Other"])
             with col_sqd:
-                squad = st.selectbox("Squad (Optional)", ["None", "Consumer Solutions", "Flight Solutions", "Hotel Solutions"])
+                squad = st.selectbox("Squad (Optional)", ["None", "Consumer Solutions", "Other"])
             
             st.markdown("---")
             st.subheader("Select Interests")

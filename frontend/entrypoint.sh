@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+streamlit run app.py --server.port 8501 --server.address 0.0.0.0 &
+
+nginx -g "daemon off;"

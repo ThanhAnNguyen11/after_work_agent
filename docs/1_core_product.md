@@ -148,7 +148,7 @@ The system supports two activity sources.
 
 ### Fixed Activities
 
-Configured by administrators.
+Configured by file.
 
 Examples:
 

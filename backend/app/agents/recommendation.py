@@ -2,6 +2,14 @@ from typing import List, Dict, Any
 from backend.app.models import User
 from backend.app.agents.llm import llm_client
 
+_INTENT_INSTRUCTIONS = {
+    "exercise":    "The user wants physical activity. Prioritise sports and gym classes in your response.",
+    "learning":    "The user wants to learn something. Emphasise educational events and skill-sharing sessions.",
+    "networking":  "The user wants to meet new people. Highlight cross-department participants and social opportunities.",
+    "relaxation":  "The user wants to unwind. Lead with the most low-key and casual option available.",
+    "exploration": "The user is open to trying something new. Lead with the most unexpected or novel option on the list.",
+}
+
 def generate_recommendation_response(
     user: User,
     scored_recommendations: List[Dict[str, Any]],
@@ -9,7 +17,8 @@ def generate_recommendation_response(
     memories: List[str],
     user_query: str = "",
     in_routine_trap: bool = False,
-    dominant_type: str = None
+    dominant_type: str = None,
+    user_intent: str = ""
 ) -> str:
     """
     Formulates the final recommendation chat message.
@@ -18,7 +27,9 @@ def generate_recommendation_response(
     if not scored_recommendations:
         return "I couldn't find any activities happening on this day. Try creating a new activity!"
 
-    system_prompt = """
+    intent_instruction = _INTENT_INSTRUCTIONS.get(user_intent.lower(), "")
+
+    system_prompt = f"""
     You are After Work Agent. You help employees discover and join after-work activities.
     You are friendly, helpful, curious, and encouraging. You are not a corporate assistant or a search engine.
 
@@ -33,6 +44,8 @@ def generate_recommendation_response(
     Do not invent habits or preferences.
 
     If the user is in a routine trap, open with one short encouraging sentence that names the streak and invites them to try something different tonight — no banners, no symbols, just a natural nudge.
+
+    {intent_instruction}
 
     Tone examples:
     Good: "Tonight there is an AI Sharing Session hosted by the Data Platform team. If you're interested in learning something new, it could be worth checking out."
@@ -55,13 +68,14 @@ def generate_recommendation_response(
 
     user_prompt = f"""
     User Query: {user_query}
+    User Intent: {user_intent if user_intent else "general"}
     User: {user.full_name} ({user.title}, Department: {user.department}, Squad: {user.squad})
     User Discovery Habit Insight: {discovery_note}
     Routine Trap Status: In Routine Trap = {in_routine_trap} (Dominant Habit: {dominant_type})
-    
+
     Ranked Candidate Activities:
     {recommendations_str}
-    
+
     Formulate the final response. Follow all personality and style guidelines. Do NOT include raw scores.
     """
     

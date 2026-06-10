@@ -41,18 +41,19 @@ class User(Base):
         else:
             self.interests_raw = json.dumps([])
 
-class GymClass(Base):
-    __tablename__ = "gym_classes"
+class FixedActivity(Base):
+    __tablename__ = "fixed_activities"
 
     id = Column(Integer, primary_key=True, index=True)
     class_name = Column(String, nullable=False)
     description = Column(Text, nullable=True)
-    weekday = Column(String, nullable=False)  # e.g., "Monday, Wednesday, Friday" or "Monday"
-    start_time = Column(String, nullable=False)  # e.g., "18:00"
-    end_time = Column(String, nullable=True)  # e.g., "19:00"
+    weekday = Column(String, nullable=False)
+    start_time = Column(String, nullable=False)
+    end_time = Column(String, nullable=True)
     location = Column(String, nullable=False)
     capacity = Column(Integer, default=20)
     instructor = Column(String, nullable=True)
+    guidelines = Column(Text, nullable=True)
     active = Column(Boolean, default=True)
 
 class Activity(Base):
@@ -107,14 +108,14 @@ class RecommendationLog(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     activity_id = Column(Integer, ForeignKey("activities.id"), nullable=True)
-    gym_class_id = Column(Integer, ForeignKey("gym_classes.id"), nullable=True)
+    gym_class_id = Column(Integer, ForeignKey("fixed_activities.id"), nullable=True)
     recommended_at = Column(DateTime, default=datetime.utcnow)
     status = Column(String, default="shown")  # 'shown', 'clicked', 'joined', 'dismissed'
 
     # Relationships
     user = relationship("User")
     activity = relationship("Activity")
-    gym_class = relationship("GymClass")
+    gym_class = relationship("FixedActivity")
 
 class UserExperience(Base):
     __tablename__ = "user_experiences"
@@ -122,7 +123,7 @@ class UserExperience(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     activity_id = Column(Integer, ForeignKey("activities.id"), nullable=True)
-    gym_class_id = Column(Integer, ForeignKey("gym_classes.id"), nullable=True)
+    gym_class_id = Column(Integer, ForeignKey("fixed_activities.id"), nullable=True)
     experience_date = Column(DateTime, default=datetime.utcnow)
     energy_rating = Column(Integer, nullable=True)  # -2 to +2
     connections_made = Column(Integer, default=0)
@@ -132,7 +133,7 @@ class UserExperience(Base):
     # Relationships
     user = relationship("User")
     activity = relationship("Activity")
-    gym_class = relationship("GymClass")
+    gym_class = relationship("FixedActivity")
 
     @property
     def communities_enjoyed(self):
@@ -168,14 +169,14 @@ class ParticipationJournal(Base):
     journal_date = Column(Date, nullable=False)
     status = Column(String, nullable=False)  # 'asked', 'skipped', 'resolved_no_activity', 'resolved_activity'
     activity_id = Column(Integer, ForeignKey("activities.id"), nullable=True)
-    gym_class_id = Column(Integer, ForeignKey("gym_classes.id"), nullable=True)
+    gym_class_id = Column(Integer, ForeignKey("fixed_activities.id"), nullable=True)
     custom_activity = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
     user = relationship("User")
     activity = relationship("Activity")
-    gym_class = relationship("GymClass")
+    gym_class = relationship("FixedActivity")
 
     __table_args__ = (UniqueConstraint('user_id', 'journal_date', name='_user_journal_date_uc'),)
 
