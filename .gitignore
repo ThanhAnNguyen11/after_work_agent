@@ -1,0 +1,22 @@
+# Sensitive config
+.env
+.env.*
+.greennode.json
+
+# Database
+database.db
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Logs
+*.log
+
+# AgentBase
+.agentbase/
+.agentbase-state.json

@@ -332,6 +332,16 @@ class APIClient:
         except Exception:
             pass
 
+    def get_conversation_starter(self, user_id: int) -> Dict[str, Any]:
+        try:
+            response = requests.get(f"{self.base_url}/api/users/{user_id}/conversation-starter")
+            if response.status_code == 200:
+                return response.json()
+            return {"type": "welcome", "message": "Looking for something to do tonight?"}
+        except Exception as e:
+            print(f"Error fetching conversation starter: {e}")
+            return {"type": "welcome", "message": "Looking for something to do tonight?"}
+
     def dev_reset(self) -> Dict[str, Any]:
         try:
             response = requests.post(f"{self.base_url}/api/dev/reset")

@@ -5,17 +5,19 @@ from typing import List, Optional
 from datetime import datetime, timedelta, date
 
 from backend.app.database import get_db, init_db
-from backend.app.models import User, Activity, GymClass, ActivityParticipant, Memory, RecommendationLog, UserExperience, UserBehavioralInterest, ParticipationJournal, Notification
+from backend.app.models import User, Activity, FixedActivity, ActivityParticipant, Memory, RecommendationLog, UserExperience, UserBehavioralInterest, ParticipationJournal, Notification
 from backend.app.schemas import (
-    UserCreate, UserResponse, ActivityCreate, ActivityResponse, 
-    GymClassResponse, MemoryResponse, ChatRequest, ChatResponse,
+    UserCreate, UserResponse, ActivityCreate, ActivityResponse,
+    FixedActivityResponse, MemoryResponse, ChatRequest, ChatResponse,
     JoinActivityRequest, JoinActivityResponse,
     RecommendationLogCreate, RecommendationLogResponse, RecommendationStatusUpdate,
     UserExperienceCreate, UserExperienceResponse,
     JournalOption, JournalPendingResponse, JournalResolveRequest, NotificationResponse,
-    UserLoginRequest, UserLoginResponse, UserOnboardRequest
+    UserLoginRequest, UserLoginResponse, UserOnboardRequest,
+    ConversationStarterResponse
 )
 from backend.app.agents.graph import run_agent_flow
+from backend.app.agents.llm import llm_client
 from backend.app.org_utils import organization_distance
 
 app = FastAPI(
@@ -36,6 +38,10 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup():
     init_db()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 # --- CHAT / AGENT ENDPOINT ---
 
@@ -317,9 +323,9 @@ def join_activity(activity_id: int, req: JoinActivityRequest, db: Session = Depe
 
 # --- GYM CLASSES ENDPOINTS ---
 
-@app.get("/api/gym-classes", response_model=List[GymClassResponse])
+@app.get("/api/gym-classes", response_model=List[FixedActivityResponse])
 def list_gym_classes(db: Session = Depends(get_db)):
-    return db.query(GymClass).filter(GymClass.active == True).all()
+    return db.query(FixedActivity).filter(FixedActivity.active == True).all()
 
 # --- SCENARIO 5: MISSING PLAYERS CANDIDATE SELECTOR ---
 
@@ -594,9 +600,9 @@ def get_pending_journal_prompt(user_id: int, db: Session = Depends(get_db)):
     # Gather evening options (start_time >= 17:00) on the target_date
     weekday_name = target_date.strftime("%A")
     
-    gym_classes = db.query(GymClass).filter(
-        GymClass.active == True,
-        GymClass.weekday.like(f"%{weekday_name}%")
+    gym_classes = db.query(FixedActivity).filter(
+        FixedActivity.active == True,
+        FixedActivity.weekday.like(f"%{weekday_name}%")
     ).all()
     
     evening_classes = [gc for gc in gym_classes if gc.start_time >= "17:00"]
@@ -700,7 +706,7 @@ def resolve_journal_prompt(
                 act.current_participants += 1
                 
         elif req.gym_class_id:
-            gc = db.query(GymClass).filter(GymClass.id == req.gym_class_id).first()
+            gc = db.query(FixedActivity).filter(FixedActivity.id == req.gym_class_id).first()
             if not gc:
                 raise HTTPException(status_code=404, detail="Selected gym class not found")
             resolved_activity_type = "gym"
@@ -828,6 +834,77 @@ def logout_user(token: str, db: Session = Depends(get_db)):
         user.session_token = None
         db.commit()
     return {"success": True, "message": "Logged out."}
+
+@app.get("/api/users/{user_id}/conversation-starter", response_model=ConversationStarterResponse)
+def get_conversation_starter(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    now = get_current_time()
+
+    # Priority 1: unresolved participation exists
+    if now.hour >= 21:
+        target_date = now.date()
+        prompt_active = True
+    elif now.hour < 16:
+        target_date = (now - timedelta(days=1)).date()
+        prompt_active = True
+    else:
+        prompt_active = False
+
+    if prompt_active:
+        existing_journal = db.query(ParticipationJournal).filter(
+            ParticipationJournal.user_id == user_id,
+            ParticipationJournal.journal_date == target_date
+        ).first()
+
+        if not existing_journal:
+            start_of_day = datetime(target_date.year, target_date.month, target_date.day, 0, 0, 0)
+            end_of_day = datetime(target_date.year, target_date.month, target_date.day, 23, 59, 59)
+            participated = db.query(ActivityParticipant).join(Activity).filter(
+                ActivityParticipant.user_id == user_id,
+                Activity.start_time >= start_of_day,
+                Activity.start_time <= end_of_day
+            ).first()
+
+            if not participated:
+                return ConversationStarterResponse(
+                    type="participation_followup",
+                    message="What did you do yesterday evening?"
+                )
+
+    # Priority 2: contextual welcome (LLM-generated)
+    hour = now.hour
+    interests = user.interests or []
+
+    if hour < 12:
+        time_context = "morning, before work starts"
+    elif hour < 17:
+        time_context = "afternoon, approaching the end of the work day"
+    else:
+        time_context = "evening, after work hours"
+
+    system_prompt = """You are After Work Agent, a friendly workplace activity assistant.
+Write ONE short, natural opening sentence to greet the employee and invite them to explore after-work activities.
+Do not list activities. Do not use bullet points. Max 20 words. Be warm and specific to their interests if available."""
+
+    user_prompt = f"""Employee name: {user.full_name.split()[-1]}
+Time of day: {time_context}
+Declared interests: {', '.join(interests) if interests else 'none yet'}"""
+
+    try:
+        message = llm_client.run_agent(system_prompt, user_prompt).strip()
+        if not message:
+            raise ValueError("empty response")
+    except Exception:
+        # Fallback to simple template if LLM is unavailable
+        action_hint = "Planning something after work today?" if hour < 17 else "Looking for something to do tonight?"
+        interest_hint = f" You're into {interests[0]} — want me to check what's on?" if interests else " Want me to show you what activities are available?"
+        message = f"{action_hint}{interest_hint}"
+
+    return ConversationStarterResponse(type="welcome", message=message)
+
 
 @app.post("/api/dev/reset")
 def dev_reset(db: Session = Depends(get_db)):

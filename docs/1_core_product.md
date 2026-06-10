@@ -152,7 +152,7 @@ The system supports two activity sources.
 
 ### Fixed Activities
 
-Configured by administrators.
+Configured by file.
 
 Examples:
 
@@ -219,6 +219,7 @@ Store:
 
 This becomes participation history.
 
+<<<<<<< HEAD
 Participation history is later used to improve recommendations.
 
 ---
@@ -252,3 +253,6 @@ Hello World!
 Lalala
 hiiii
 xxxxxxx
+=======
+Participation history is later used to improve recommendations.
+>>>>>>> adcb8cc936a68236b46dde2d4d595967b964a706

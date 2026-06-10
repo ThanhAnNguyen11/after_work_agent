@@ -4,6 +4,14 @@ A complete hackathon MVP for an intelligent **After Work Activity Discovery Agen
 
 ---
 
+## North Star
+
+Help employees discover and join after-work activities happening inside the company.
+
+The goal is to make activities easier to discover, easier to join, and help employees connect with more communities.
+
+---
+
 ## 🌟 Key Product Capabilities
 
 1. **Intelligent Recommendations (Scenario 1)**: Suggests activities matching user profile interests, attendance history, scheduled classes, and organizational peers.
@@ -16,11 +24,12 @@ A complete hackathon MVP for an intelligent **After Work Activity Discovery Agen
 
 ## 🛠 Tech Stack
 - **Backend**: FastAPI (Python), SQLAlchemy
-- **Frontend**: Streamlit
-- **Database**: SQLite
+- **Frontend**: Streamlit (served behind nginx reverse proxy on port 8080)
+- **Database**: PostgreSQL (vDB Relational on VNG Cloud) — schema auto-created on startup via `Base.metadata.create_all()`
 - **Agentic Flow**: LangGraph
-- **AI Integration**: OpenRouter API (`qwen/qwen-2.5-72b-instruct` or custom selection)
-- **Local Testing**: Built-in **Mock Fallback Engine** that emulates Qwen3 model agent responses when no API Key is configured.
+- **AI Integration**: VNG Cloud AI Platform (`google/gemma-4-31b-it` via OpenAI-compatible API)
+- **Deployment**: GreenNode AgentBase (two runtimes: backend + frontend, both on port 8080)
+- **Local Testing**: Built-in **Mock Fallback Engine** when `AI_PLATFORM_API_KEY` is not configured.
 
 ---
 
@@ -32,25 +41,24 @@ after-work-agent/
 ├── Dockerfile               # Production multi-process docker package
 ├── entrypoint.sh            # Runs backend & frontend servers in parallel
 ├── README.md                # Main readme
-├── database.db              # SQLite Database (Auto-created on startup)
-├── docs/                    # Modularized blueprint & specs
-│   ├── AFTER_WORK_AGENT_BLUEPRINT.md  # Main blueprint entrypoint index
+├── .env                     # Sensitive config (not committed — see .gitignore)
+├── docs/                    # Product specs & agent behavior
 │   ├── 1_core_product.md    # Auth, onboarding, interests & core features
 │   ├── 2_activity_lifecycle.md # Creation, guidelines, join flow & full capacity
 │   ├── 3_data_model.md      # Database tables and fields specification
-│   ├── 4_agent_responsibilities.md # LangGraph agent inputs/outputs
-│   └── 5_system_prompts.md  # System rules, cold start & grounding prompts
+│   ├── 4_agent_capabilities.md # Agent inputs/outputs (6 agents)
+│   └── 5_system_prompts.md  # Agent identity, tone & grounding rules
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py
 │   │   ├── main.py          # FastAPI server & endpoints
-│   │   ├── database.py      # SQLAlchemy engine & SQLite seeding script
-│   │   ├── models.py        # SQLite Database models
+│   │   ├── database.py      # SQLAlchemy engine & schema init
+│   │   ├── models.py        # Database models (PostgreSQL)
 │   │   ├── schemas.py       # Pydantic serialization schemas
 │   │   ├── org_utils.py     # Org closeness and recommendation scoring calculations
 │   │   └── agents/
 │   │       ├── __init__.py
-│   │       ├── llm.py       # OpenRouter client / Mock Fallback Engine
+│   │       ├── llm.py       # VNG Cloud AI Platform client / Mock Fallback Engine
 │   │       ├── extraction.py# Activity Extraction Agent
 │   │       ├── discovery.py # Discovery Agent (Routine Breaking)
 │   │       ├── social_opp.py# Social Opportunity Agent (Cross-squad connection)
@@ -66,50 +74,30 @@ after-work-agent/
 
 ---
 
-## 🧮 Algorithms & Formulae
+## 📚 Documentation
 
-### Organizational Distance
-Closeness between two employees is scored based on the hierarchy:
-- **Same Squad**: `1.0`
-- **Same Department**: `0.8`
-- **Same Group**: `0.5`
-- **Cross Group**: `0.2`
-- **Cross Company**: `0.0`
-
-### Weighted Recommendation Score
-Every upcoming class or dynamic activity is scored before presentation using the formula:
-
-$$\text{score} = 0.4 \times \text{interest\_match} + 0.3 \times \text{activity\_relevance} + 0.2 \times \text{social\_connection} + 0.1 \times \text{discovery\_score}$$
-
-- **`interest_match`**: Direct tag match (`1.0`) or semantic category match (`0.8`).
-- **`activity_relevance`**: Ratio of attendance history matching the activity type.
-- **`social_connection`**: Average organizational closeness to registered peers.
-- **`discovery_score`**: Inverse of activity relevance (`1.0 - relevance`), prioritizing new categories to break routines.
+1. [Core Product & Features](docs/1_core_product.md)
+2. [Activity Lifecycle](docs/2_activity_lifecycle.md)
+3. [Data Model](docs/3_data_model.md)
+4. [Agent Capabilities](docs/4_agent_capabilities.md)
+5. [Agent Behavior](docs/5_system_prompts.md)
 
 ---
 
 ## 🚀 Running the App
 
-### Option A: Running with Docker (Recommended)
+### Prerequisites
 
-1. Build the docker image:
-   ```bash
-   docker build -t after-work-agent .
-   ```
+Copy `.env.example` to `.env` and fill in your credentials:
+```
+DATABASE_URL=postgresql://<user>:<password>@<host>:5432/<dbname>
+AI_PLATFORM_API_KEY=<your-vng-cloud-api-key>
+AI_PLATFORM_MODEL=google/gemma-4-31b-it
+AI_PLATFORM_API_BASE=https://maas-llm-aiplatform-hcm.api.vngcloud.vn/v1
+BACKEND_URL=http://localhost:8000
+```
 
-2. Run the container:
-   ```bash
-   docker run -p 8000:8000 -p 8501:8501 -e OPENROUTER_API_KEY="your-api-key" after-work-agent
-   ```
-   *(If you don't have an OpenRouter API key, omit the environment variable. The system will automatically fall back to its internal Mock Engine so you can demonstrate the hackathon MVP immediately!)*
-
-3. Access the interfaces:
-   - **Streamlit Frontend Dashboard**: [http://localhost:8501](http://localhost:8501)
-   - **FastAPI backend endpoints API**: [http://localhost:8000/docs](http://localhost:8000/docs)
-
----
-
-### Option B: Running Locally
+### Option A: Running Locally
 
 1. Create a virtual environment and install requirements:
    ```bash
@@ -120,14 +108,36 @@ $$\text{score} = 0.4 \times \text{interest\_match} + 0.3 \times \text{activity\_
 
 2. Start the FastAPI backend:
    ```bash
-   # Run from root folder
    uvicorn backend.app.main:app --reload --port 8000
    ```
 
-3. Open a second terminal window and run the Streamlit frontend:
+3. Open a second terminal and run the Streamlit frontend:
    ```bash
    streamlit run frontend/app.py --server.port 8501
    ```
+
+### Option B: Running with Docker
+
+1. Build backend and frontend images:
+   ```bash
+   docker build --platform linux/amd64 -t after-work-agent-backend .
+   docker build --platform linux/amd64 -f frontend/Dockerfile -t after-work-agent-frontend ./frontend
+   ```
+
+2. Run backend (port 8080):
+   ```bash
+   docker run -p 8080:8080 --env-file .env after-work-agent-backend
+   ```
+
+3. Run frontend (port 8080, proxied via nginx):
+   ```bash
+   docker run -p 8081:8080 --env-file .env after-work-agent-frontend
+   ```
+
+### Option C: Deployed on GreenNode AgentBase
+
+- **Frontend**: `https://endpoint-ed2a7b49-8ce2-43bd-9f35-b59c33696a09.agentbase-runtime.aiplatform.vngcloud.vn`
+- **Backend API**: `https://endpoint-00afda81-2e11-49f5-8ba5-e63fe76a86d3.agentbase-runtime.aiplatform.vngcloud.vn`
 
 ---
 
@@ -137,4 +147,4 @@ To verify that the system is fully functional, run the automated scenario runner
 ```bash
 python3 backend/tests/test_flow.py
 ```
-This executes the SQLite database migrations, seeds simulation profiles (including mock gym classes, football host players, and a gym routine history), and verifies that all five scenarios are correctly resolved by the LangGraph agents.
+This requires a running backend and a configured `.env` with a valid `DATABASE_URL`. It seeds simulation profiles and verifies that all five scenarios are correctly resolved by the LangGraph agents.

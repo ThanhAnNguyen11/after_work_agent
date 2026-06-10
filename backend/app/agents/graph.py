@@ -4,7 +4,7 @@ from langgraph.graph import StateGraph, END
 from sqlalchemy.orm import Session
 
 from backend.app.database import SessionLocal
-from backend.app.models import User, Activity, GymClass, ActivityParticipant, Memory, RecommendationLog
+from backend.app.models import User, Activity, FixedActivity, ActivityParticipant, Memory, RecommendationLog
 from backend.app.org_utils import calculate_recommendation_score, organization_distance
 from backend.app.agents.extraction import extract_activity_from_text
 from backend.app.agents.discovery import run_discovery_agent
@@ -17,9 +17,10 @@ from backend.app.agents.llm import llm_client
 class AgentState(TypedDict):
     user_id: int
     message: str
-    intent: str  # "extract" or "recommend"
+    intent: str       # "extract" or "recommend"
+    user_intent: str  # "exercise" | "learning" | "networking" | "relaxation" | "exploration"
     response: str
-    
+
     # Internal variables passed between nodes
     user_data: Optional[Dict[str, Any]]
     available_activities: List[Dict[str, Any]]
@@ -32,37 +33,62 @@ class AgentState(TypedDict):
 
 def intent_detector(state: AgentState) -> Dict[str, Any]:
     """
-    Classifies the user input to route the message.
-    Looks for phrases like "at 6pm", "need 2 players", "anyone up for", etc., to trigger extraction.
+    Classifies the user input into routing intent (extract/recommend) and
+    semantic user intent (exercise/learning/networking/relaxation/exploration).
     """
     message = state["message"].lower()
-    
-    # Simple heuristics to detect activity creation intent
-    is_extraction = False
-    
-    # Typical phrases for announcing an activity
+
+    # --- Heuristic: detect activity-creation signals ---
     creation_signals = [
         "at 6pm", "at 6 pm", "at 7pm", "at 5pm", "at 18:00", "at 19:00",
         "need 2 more", "need 3 more", "need more players", "need players",
         "anyone want to play", "football at", "badminton at", "board games at",
         "swimming at", "pool at", "swim at"
     ]
-    
-    if any(sig in message for sig in creation_signals):
-        is_extraction = True
-        
-    # Also check via LLM if not mock
+    is_extraction = any(sig in message for sig in creation_signals)
+
+    # --- Heuristic: map keywords to semantic intent ---
+    user_intent = "exploration"  # default
+    if any(k in message for k in ["meet", "network", "connect", "new people", "other team", "other department", "outside my team"]):
+        user_intent = "networking"
+    elif any(k in message for k in ["learn", "study", "ai talk", "sharing", "knowledge", "workshop", "seminar"]):
+        user_intent = "learning"
+    elif any(k in message for k in ["relax", "chill", "unwind", "coffee", "board game", "casual", "hang out"]):
+        user_intent = "relaxation"
+    elif any(k in message for k in ["exercise", "workout", "gym", "run", "swim", "football", "badminton", "yoga", "sport", "fitness", "body"]):
+        user_intent = "exercise"
+
+    # --- LLM classification (overrides heuristics when API is available) ---
     if not llm_client.is_mock:
-        system_prompt = """
-        You are an Intent Classifier. Classify if the user is posting/sharing an after-work activity announcement that needs to be registered (e.g. "Football at 6PM. Need 2 more players.") or if they are asking a question / requesting recommendations.
-        Respond with exactly 'EXTRACT' or 'RECOMMEND'.
-        """
-        response = llm_client.run_agent(system_prompt, f"Classify this: '{message}'").strip()
-        if "EXTRACT" in response:
+        system_prompt = """You are an Intent Classifier for an after-work activity assistant.
+
+Classify the user message into exactly ONE of these labels:
+- EXTRACT: user is announcing/posting an activity to register (e.g. "Football at 6PM, need 2 more players")
+- EXERCISE: user wants physical activity (gym, football, yoga, running, swimming, badminton...)
+- LEARNING: user wants educational or skill-building events (AI talk, study group, workshop...)
+- NETWORKING: user wants to meet new people or connect cross-department
+- RELAXATION: user wants to unwind (coffee chat, board games, casual hangout...)
+- EXPLORATION: user has no specific preference or is just browsing what's available
+
+Respond with exactly one word from the list above. No explanation."""
+
+        llm_response = llm_client.run_agent(system_prompt, f"Message: '{state['message']}'").strip().upper()
+
+        if "EXTRACT" in llm_response:
             is_extraction = True
-            
+        elif "EXERCISE" in llm_response:
+            user_intent = "exercise"
+        elif "LEARNING" in llm_response:
+            user_intent = "learning"
+        elif "NETWORKING" in llm_response:
+            user_intent = "networking"
+        elif "RELAXATION" in llm_response:
+            user_intent = "relaxation"
+        elif "EXPLORATION" in llm_response:
+            user_intent = "exploration"
+
     intent = "extract" if is_extraction else "recommend"
-    return {"intent": intent}
+    return {"intent": intent, "user_intent": user_intent}
 
 def extraction_node(state: AgentState) -> Dict[str, Any]:
     """
@@ -185,7 +211,7 @@ def load_user_context(state: AgentState) -> Dict[str, Any]:
             ).all()
             
             # Load active gym classes scheduled for the target weekday
-            gym_classes = db.query(GymClass).filter(GymClass.active == True).all()
+            gym_classes = db.query(FixedActivity).filter(FixedActivity.active == True).all()
             filtered_gym_classes = [gc for gc in gym_classes if target_weekday in gc.weekday]
         else:
             # General query with no specific day: load activities for next 7 days and all gym classes
@@ -194,7 +220,7 @@ def load_user_context(state: AgentState) -> Dict[str, Any]:
                 Activity.start_time <= datetime(now.year, now.month, now.day, 23, 59) + timedelta(days=7)
             ).all()
             
-            filtered_gym_classes = db.query(GymClass).filter(GymClass.active == True).all()
+            filtered_gym_classes = db.query(FixedActivity).filter(FixedActivity.active == True).all()
             
         # Format activities & classes into clean contexts for scoring
         candidate_activities = []
@@ -336,7 +362,7 @@ def recommendation_node(state: AgentState) -> Dict[str, Any]:
                 peers = db.query(User).filter(User.id.in_([p.user_id for p in peer_records])).all() if peer_records else []
                 creator = db.query(User).filter(User.id == obj.created_by).first()
             else:
-                obj = db.query(GymClass).filter(GymClass.id == item["id"]).first()
+                obj = db.query(FixedActivity).filter(FixedActivity.id == item["id"]).first()
                 peers = []
                 creator = None
                 
@@ -347,6 +373,7 @@ def recommendation_node(state: AgentState) -> Dict[str, Any]:
                 participants=peers,
                 creator=creator,
                 user_query=state.get("message", ""),
+                user_intent=state.get("user_intent", ""),
                 db=db
             )
             
@@ -395,7 +422,8 @@ def recommendation_node(state: AgentState) -> Dict[str, Any]:
             memories=memories,
             user_query=state.get("message", ""),
             in_routine_trap=in_routine_trap,
-            dominant_type=dominant_type
+            dominant_type=dominant_type,
+            user_intent=state.get("user_intent", "")
         )
         
         # Log presented recommendations
@@ -513,6 +541,7 @@ def run_agent_flow(user_id: int, message: str) -> str:
         "user_id": user_id,
         "message": message,
         "intent": "",
+        "user_intent": "",
         "response": "",
         "user_data": None,
         "available_activities": [],

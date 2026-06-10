@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from backend.app.models import User, Activity, GymClass
+from backend.app.models import User, Activity, FixedActivity
 
 def organization_distance(user_a: User, user_b: User) -> float:
     """
@@ -36,22 +36,34 @@ def organization_distance(user_a: User, user_b: User) -> float:
         
     return 0.0
 
+INTENT_WEIGHTS = {
+    "exercise":    {"interest": 0.45, "relevance": 0.40, "social": 0.10, "discovery": 0.05},
+    "learning":    {"interest": 0.40, "relevance": 0.30, "social": 0.15, "discovery": 0.15},
+    "networking":  {"interest": 0.25, "relevance": 0.20, "social": 0.45, "discovery": 0.10},
+    "relaxation":  {"interest": 0.35, "relevance": 0.35, "social": 0.20, "discovery": 0.10},
+    "exploration": {"interest": 0.30, "relevance": 0.15, "social": 0.15, "discovery": 0.40},
+}
+_DEFAULT_WEIGHTS = {"interest": 0.40, "relevance": 0.30, "social": 0.20, "discovery": 0.10}
+
 def calculate_recommendation_score(
-    user: User, 
-    activity_or_class: Any, 
-    user_history: List[Activity], 
+    user: User,
+    activity_or_class: Any,
+    user_history: List[Activity],
     participants: List[User] = None,
     creator: User = None,
     user_query: str = "",
+    user_intent: str = "",
     db: Any = None
 ) -> Dict[str, Any]:
     """
     Calculate the recommendation score based on the formula:
-    score = 0.4 * interest_match + 0.3 * activity_relevance + 0.2 * social_connection + 0.1 * discovery_score
-    
+    score = w_interest * interest_match + w_relevance * activity_relevance
+            + w_social * social_connection + w_discovery * discovery_score
+
+    Weights are adjusted by user_intent (exercise/learning/networking/relaxation/exploration).
     Returns a dictionary with the final score and sub-scores for transparency.
     """
-    is_gym_class = isinstance(activity_or_class, GymClass)
+    is_gym_class = isinstance(activity_or_class, FixedActivity)
     
     # Detect if user is in a routine trap (3+ activities, 70%+ of one type)
     in_routine_trap = False
@@ -165,12 +177,13 @@ def calculate_recommendation_score(
     else:
         discovery_score = 1.0 - activity_relevance
         
-    # Calculate weighted total score
+    # Calculate weighted total score (weights shift based on user intent)
+    w = INTENT_WEIGHTS.get(user_intent.lower(), _DEFAULT_WEIGHTS)
     final_score = (
-        0.4 * interest_match +
-        0.3 * activity_relevance +
-        0.2 * social_connection +
-        0.1 * discovery_score
+        w["interest"]   * interest_match +
+        w["relevance"]  * activity_relevance +
+        w["social"]     * social_connection +
+        w["discovery"]  * discovery_score
     )
     
     # Routine Interrupter (The "Uncomfort Zone" Pass)
