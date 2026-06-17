@@ -1,0 +1,443 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>AfterWork | Discover</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filter-pill {
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .activity-card-shadow:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#fbf9f8",
+                      "secondary": "#5f5e5e",
+                      "on-secondary-container": "#636262",
+                      "on-primary-container": "#fffbff",
+                      "rausch-active": "#E00B41",
+                      "luxe-purple": "#460479",
+                      "error": "#ba1a1a",
+                      "surface-variant": "#e4e2e2",
+                      "background": "#fbf9f8",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "on-error-container": "#93000a",
+                      "outline": "#906f70",
+                      "surface-container-highest": "#e4e2e2",
+                      "outline-variant": "#e5bdbe",
+                      "tertiary-fixed": "#f0dbff",
+                      "on-primary-fixed": "#40000d",
+                      "inverse-surface": "#303031",
+                      "surface-container-high": "#e9e8e7",
+                      "primary": "#ba0036",
+                      "secondary-container": "#e2dfde",
+                      "on-primary-fixed-variant": "#920029",
+                      "surface-bright": "#fbf9f8",
+                      "primary-fixed-dim": "#ffb2b6",
+                      "ink": "#222222",
+                      "primary-container": "#e21e4a",
+                      "on-surface": "#1b1c1c",
+                      "error-container": "#ffdad6",
+                      "inverse-primary": "#ffb2b6",
+                      "hairline": "#DDDDDD",
+                      "on-error": "#ffffff",
+                      "tertiary-container": "#915bc5",
+                      "on-background": "#1b1c1c",
+                      "on-tertiary-container": "#fffbff",
+                      "surface-soft": "#F7F7F7",
+                      "on-tertiary-fixed": "#2c0050",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-secondary": "#ffffff",
+                      "tertiary-fixed-dim": "#ddb7ff",
+                      "tertiary": "#7742aa",
+                      "on-surface-variant": "#5c3f41",
+                      "on-tertiary-fixed-variant": "#602a93",
+                      "on-tertiary": "#ffffff",
+                      "surface-dim": "#dbdad9",
+                      "surface-container": "#efeded",
+                      "surface-tint": "#be0038",
+                      "primary-fixed": "#ffdada",
+                      "canvas": "#FFFFFF",
+                      "inverse-on-surface": "#f2f0f0",
+                      "on-primary": "#ffffff",
+                      "on-secondary-fixed-variant": "#474746",
+                      "on-secondary-fixed": "#1b1c1c",
+                      "surface-container-low": "#f5f3f3",
+                      "rausch": "#FF385C"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-md": "16px",
+                      "grid-margin": "80px",
+                      "stack-xs": "4px",
+                      "stack-lg": "24px",
+                      "grid-gutter": "24px",
+                      "section-padding": "80px",
+                      "stack-xl": "48px",
+                      "stack-sm": "8px"
+              },
+              "fontFamily": {
+                      "display-xl-mobile": ["Inter"],
+                      "badge": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "display-xl": ["Inter"],
+                      "body-md": ["Inter"],
+                      "nav-link": ["Inter"],
+                      "display-md": ["Inter"],
+                      "caption": ["Inter"],
+                      "button-md": ["Inter"]
+              },
+              "fontSize": {
+                      "display-xl-mobile": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                      "badge": ["11px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                      "display-lg": ["22px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                      "display-xl": ["28px", {"lineHeight": "1.4", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "nav-link": ["16px", {"lineHeight": "1.25", "fontWeight": "600"}],
+                      "display-md": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "caption": ["14px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                      "button-md": ["16px", {"lineHeight": "1", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-canvas text-ink antialiased">
+<!-- Persistent Left Sidebar -->
+<nav class="flex flex-col h-screen py-8 px-6 bg-canvas dark:bg-surface-container-lowest h-full w-64 fixed left-0 top-0 border-r border-hairline dark:border-outline-variant z-50">
+<!-- Brand & Mascot -->
+<div class="mb-10 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-rausch flex items-center justify-center overflow-hidden border border-hairline shadow-sm">
+<img alt="ALP Mascot" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida/AP1WRLvOiaJlD5i6KEkQx01uJu2pOwSjYEffKxNTey6rylWLO7sw3zRfWorYwz8xbK8p18EKXaDvty_SUv6UXhagQPuzO2dfpOuC4gC_cjTek0tr_FxnyRhlY3uJixI4gAiT7JPvj2bMrMthVuFWwBmFoh-Q3EI66iXjsr_Ld2HeXZkBbd-6Xn-z45K34UaPpTbnaOPizA9ikONHmfagIO-wzqxk2jgPgfLvVyst0JSgNoZFTc5vPd8RqMeHYlg">
+</div>
+<div>
+<h1 class="font-display-md text-display-md text-ink dark:text-on-background tracking-tight">AfterWork</h1>
+
+</div>
+</div>
+<!-- Main Nav Links -->
+<div class="space-y-2 flex-grow">
+<!-- Discover Active -->
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-rausch font-bold border-r-2 border-rausch bg-surface-container-low transition-transform scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-nav-link text-nav-link">Discover</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary dark:text-on-secondary-fixed-variant hover:text-ink hover:bg-surface-soft dark:hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+<span class="font-nav-link text-nav-link">My Agent</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary dark:text-on-secondary-fixed-variant hover:text-ink hover:bg-surface-soft dark:hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+<span class="font-nav-link text-nav-link">Create Activity</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary dark:text-on-secondary-fixed-variant hover:text-ink hover:bg-surface-soft dark:hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-nav-link text-nav-link">Profile</span>
+</a>
+</div>
+<!-- Secondary/Footer Links -->
+<div class="mt-auto space-y-2 pt-6 border-t border-hairline">
+<a class="flex items-center gap-4 px-4 py-2 text-secondary hover:text-ink transition-colors font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="">Settings</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-2 text-secondary hover:text-ink transition-colors font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="">Help</span>
+</a>
+<div class="mt-4 px-4">
+
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen">
+<!-- Filter Bar Container -->
+<header class="sticky top-0 z-40 backdrop-blur-md px-grid-margin py-6">
+<div class="max-w-5xl mx-auto">
+<div class="filter-pill flex items-center bg-white border border-hairline rounded-full py-2 pl-8 pr-2 transition-all hover:bg-surface-soft cursor-pointer group"><div class="flex-1 border-r border-hairline flex flex-col justify-center">
+<span class="text-[12px] font-bold text-ink">On/Off Campus</span>
+<div class="flex items-center gap-1">
+<span class="font-body-sm text-body-sm text-secondary group-hover:text-ink">Add campus filter</span>
+</div>
+</div>
+<div class="flex-1 border-r border-hairline flex flex-col justify-center px-6">
+<span class="text-[12px] font-bold text-ink">Category</span>
+<div class="flex items-center gap-1">
+<span class="font-body-sm text-body-sm text-secondary group-hover:text-ink">Any category</span>
+</div>
+</div>
+<div class="flex-1 border-r border-hairline flex flex-col justify-center px-6">
+<span class="text-[12px] font-bold text-ink">Type</span>
+<div class="flex items-center gap-1">
+<span class="font-body-sm text-body-sm text-secondary group-hover:text-ink">Any activity type</span>
+</div>
+</div>
+<div class="flex-1 border-r border-hairline flex flex-col justify-center px-6">
+<span class="text-[12px] font-bold text-ink">When</span>
+<div class="flex items-center gap-1">
+<span class="font-body-sm text-body-sm text-secondary group-hover:text-ink">Add dates</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col justify-center px-6">
+<span class="text-[12px] font-bold text-ink">Location</span>
+<span class="font-body-sm text-body-sm text-secondary group-hover:text-ink">Anywhere</span>
+</div>
+<div class="w-12 h-12 rounded-full bg-rausch flex items-center justify-center text-white ml-2 transition-transform active:scale-95">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</div></div>
+</div>
+</header>
+<!-- Activities Section -->
+<section class="px-grid-margin pb-section-padding">
+<!-- Section Heading -->
+<div class="flex items-center justify-between mb-8">
+<div>
+<h2 class="font-display-xl text-display-xl text-ink">For You</h2>
+<p class="font-body-md text-body-md text-secondary">Personalized recommendations from ALP based on your preferences</p>
+</div>
+</div>
+<!-- Bento Grid / Card Layout -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
+<!-- Activity Card 1 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-square rounded-xl overflow-hidden mb-3 bg-surface-variant">
+<img alt="Luxury Spa Session" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A serene luxury wellness spa with soft golden lighting illuminating a heated indoor pool. Large floor-to-ceiling windows look out onto a misty morning garden. The aesthetic is incredibly high-end with limestone textures and minimal furniture, perfectly aligned with a premium canvas and ink design system. The scene is tranquil and quiet." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpk1F4Q3GTM7bQy-d-NiJU9_KvM1y8UbyAGLUq5ZPvLyhPT23ioZ1iblcIKRWAkQtYOLwAF1Pic9WnMSE18hvy78hcQYEICq_IJqKfegNuNLJYwB3WmFSWsAsbW-dYP6Jy1PkJvmFbwDXFNejXc2lt58WYz3Lt2tUfRuF1qZrulSx-NNypDw_b4hFK2Q-htr0_5AUWIoDKw1iUut5pQgTAL9yufrTtwMKGtXUgsejnIqH1BRHzaVqbFKv1C7Kon0JqhjXd-3E-xuI">
+<div class="absolute top-3 left-3 px-3 py-1 bg-white border border-hairline rounded-full flex items-center gap-1 shadow-sm">
+<span class="text-rausch font-bold text-[13px]">98% Match</span>
+</div>
+<button class="absolute top-3 right-3 p-2 text-white/90 hover:text-white transition-colors">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: &quot;FILL&quot; 0;">favorite</span>
+</button>
+</div>
+<div class="flex justify-between items-start">
+<h3 class="font-display-md text-display-md text-ink group-hover:underline">Private Wellness Escape</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="star" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="text-sm font-semibold">4.9</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-secondary">2.4 miles • Today at 3:00 PM</p>
+<p class="mt-1 font-body-md text-body-md text-ink"> </p>
+</div>
+<!-- Activity Card 2 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-square rounded-xl overflow-hidden mb-3 bg-surface-variant">
+<img alt="Chef's Table Experience" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="An upscale dimly lit restaurant featuring a polished dark wood chef's table in the center. Modern designer lighting fixtures hang low over the table, casting warm glows on artisanal plates. The background is blurred with a sophisticated urban bar scene. High-key contrast between the ink-black shadows and the warm golden accents creates a moody, exclusive hospitality vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6rrJ1ZCYscb5q0l1rTQkbWUPcLzJUTCd0DD6tMDzIGSTmKsTbJueuE4JvbYMGEtrQ1oLlwAO8Jg9cOjjuGS5Pj_CXYvjdHzeOGMlMQ8gBtvQJh8DAJc0jovUTHz4_RI7lgSxXgzNRZz7HzzorLinvkJT-vImZOHEU5dOmjECTTWbP1YgF3PWZJBRWbf6cg20A8c-cFLdXnkBRBIjRfMLEdZBxA7pw5TGkxumyRVQ5fXE-orzkoGaLvDdXsYG_XbiieLKy5gqpx_o">
+<div class="absolute top-3 left-3 px-3 py-1 bg-white border border-hairline rounded-full flex items-center gap-1 shadow-sm">
+<span class="text-rausch font-bold text-[13px]">95% Match</span>
+</div>
+<button class="absolute top-3 right-3 p-2 text-white/90 hover:text-white transition-colors">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: &quot;FILL&quot; 0;">favorite</span>
+</button>
+</div>
+<div class="flex justify-between items-start">
+<h3 class="font-display-md text-display-md text-ink group-hover:underline">Omakase Chef's Table</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="star" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="text-sm font-semibold">5.0</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-secondary">0.8 miles • Tonight, 8:00 PM</p>
+<p class="mt-1 font-body-md text-body-md text-ink"> </p>
+</div>
+<!-- Activity Card 3 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-square rounded-xl overflow-hidden mb-3 bg-surface-variant">
+<img alt="Artistic Workspace" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A bright, minimalist co-working studio with white walls and light oak flooring. Large industrial windows flood the space with natural light. A solitary designer desk with a modern laptop and a single architectural plant sits in the frame. The atmosphere is quiet, productive, and airy, utilizing a neutral canvas palette with high-energy red accents in the decor details." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDz0oFghc3YaYEDxjnJkRkeusddMIjZ9kx-uItZWKp6NEXy6alNc1ZNcxA3WRc18XtBrkNHDdUr_gpPz1UAb0lxfF2a2f4V2y6FsU-qSDMyJGAXoUOFEa5nuHb2hHahWr2Nx2MXy8hqidEAKPYa-Y7WjO3y99YKRRfyu3Wt_iXQnuzmrvqlsMEYOOPS5Ef2Kz2YTZfgC3-7T4271xx3dPM7UhqGnniCHc3yWC9CmYjDlbP_iVsDwsKm343lLiecYsTUcoTa4PKqk8U">
+<div class="absolute top-3 left-3 px-3 py-1 bg-white border border-hairline rounded-full flex items-center gap-1 shadow-sm">
+<span class="text-rausch font-bold text-[13px]">92% Match</span>
+</div>
+<button class="absolute top-3 right-3 p-2 text-white/90 hover:text-white transition-colors">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: &quot;FILL&quot; 0;">favorite</span>
+</button>
+</div>
+<div class="flex justify-between items-start">
+<h3 class="font-display-md text-display-md text-ink group-hover:underline">Quiet Focus Studio</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="star" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="text-sm font-semibold">4.8</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-secondary">1.2 miles • Available now</p>
+<p class="mt-1 font-body-md text-body-md text-ink"> </p>
+</div>
+<!-- Activity Card 4 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-square rounded-xl overflow-hidden mb-3 bg-surface-variant">
+<img alt="Tennis Lessons" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A pristine blue outdoor tennis court during the golden hour. The long shadows of the net stretch across the court's surface. In the background, lush green trees and a clear twilight sky create a feeling of outdoor luxury and vitality. The colors are punchy and vibrant, echoing the Rausch brand identity against a clean, premium setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUOaAu5UONC7qrzKiqExt5AzQmt9OiLRFAFVWuZHB8FRK0ukHZJNRwvXB6xtk3sUiDRbehQtlVWu3yBfWISkzhoeT95aVfNQTjEi3vUDJVZvgaMS54pIx2HXDO7zxu9dddTU5fZanIyzSh25kQt4xXXbzAcWJg0L-2dASHk3AjffogLWUGYZHNxdOcOd9g7K6AGQVg8N3LVeW1R2Vy3d1lWH7Vxe5PYQ-i9M-rb1SCAFNclKYpJff26pp5nDaz4zjWEajwlnJIFGY">
+<div class="absolute top-3 left-3 px-3 py-1 bg-white border border-hairline rounded-full flex items-center gap-1 shadow-sm">
+<span class="text-rausch font-bold text-[13px]">89% Match</span>
+</div>
+<button class="absolute top-3 right-3 p-2 text-white/90 hover:text-white transition-colors">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: &quot;FILL&quot; 0;">favorite</span>
+</button>
+</div>
+<div class="flex justify-between items-start">
+<h3 class="font-display-md text-display-md text-ink group-hover:underline">Sunset Tennis Clinic</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="star" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="text-sm font-semibold">4.7</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-secondary">3.5 miles • Tomorrow, 5:30 PM</p>
+<p class="mt-1 font-body-md text-body-md text-ink"> </p>
+</div>
+<!-- Activity Card 5 (Repeated pattern) -->
+<div class="group cursor-pointer">
+<div class="relative aspect-square rounded-xl overflow-hidden mb-3 bg-surface-variant">
+<img alt="Yoga on Deck" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A high-end modern apartment rooftop deck with a panoramic view of a city skyline at dusk. A row of clean, white yoga mats are perfectly aligned on the grey composite decking. The lighting is soft and ambient from recessed floor lights. The overall aesthetic is one of serene urban luxury, with a focused, premium atmosphere for high-achievers looking to unwind." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWDEovMXP8Hf0hgYQRXIc2BhJaapXXpx-rKzaIoBCSZOH2IcEAms-ayNWgYpdI2HmP7_cz4NeG1I2erWfqtSOxWPKZslfyoWUxaH3MMg9UGxRvwJUfqEiLYCoqZ1oOMmWyiTo1HHDInUtTQjiOmMV-Xa9hx4w7m8omQL6RruClInXSavSsT8pqovmuH2_0nJfp_W4EtMoPRAVImQ-aMdhw9L39WQ5rgsDVhJcwz9vuc-qe6MhekzIs9L_dw9QxyOApM2FcGqoQrkU">
+<div class="absolute top-3 left-3 px-3 py-1 bg-white border border-hairline rounded-full flex items-center gap-1 shadow-sm">
+<span class="text-rausch font-bold text-[13px]">87% Match</span>
+</div>
+<button class="absolute top-3 right-3 p-2 text-white/90 hover:text-white transition-colors">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: &quot;FILL&quot; 0;">favorite</span>
+</button>
+</div>
+<div class="flex justify-between items-start">
+<h3 class="font-display-md text-display-md text-ink group-hover:underline">Skyline Vinyasa Flow</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="star" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="text-sm font-semibold">4.9</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-secondary">1.0 miles • Sat, 9:00 AM</p>
+<p class="mt-1 font-body-md text-body-md text-ink"> </p>
+</div>
+<!-- Activity Card 6: Yoga -->
+<div class="group cursor-pointer">
+<div class="relative aspect-square rounded-xl overflow-hidden mb-3 bg-surface-variant">
+<img alt="On-Campus Vinyasa" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&amp;fit=crop&amp;q=80&amp;w=800">
+<div class="absolute top-3 left-3 px-3 py-1 bg-white border border-hairline rounded-full flex items-center gap-1 shadow-sm">
+<span class="text-rausch font-bold text-[13px]">85% Match</span>
+</div>
+<button class="absolute top-3 right-3 p-2 text-white/90 hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 0;">favorite</span>
+</button>
+</div>
+<div class="flex justify-between items-start">
+<h3 class="font-display-md text-display-md text-ink group-hover:underline">On-Campus Vinyasa</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="text-sm font-semibold">4.8</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-secondary">Gym Studio A • Today at 5:00 PM</p>
+<p class="mt-1 font-body-md text-body-md text-ink"> </p>
+</div>
+
+<!-- Activity Card 7: Zumba -->
+<div class="group cursor-pointer">
+<div class="relative aspect-square rounded-xl overflow-hidden mb-3 bg-surface-variant">
+<img alt="Lunch Break Zumba" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://images.unsplash.com/photo-1524594152303-9fd13543fe6e?auto=format&amp;fit=crop&amp;q=80&amp;w=800">
+<div class="absolute top-3 left-3 px-3 py-1 bg-white border border-hairline rounded-full flex items-center gap-1 shadow-sm">
+<span class="text-rausch font-bold text-[13px]">82% Match</span>
+</div>
+<button class="absolute top-3 right-3 p-2 text-white/90 hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 0;">favorite</span>
+</button>
+</div>
+<div class="flex justify-between items-start">
+<h3 class="font-display-md text-display-md text-ink group-hover:underline">Lunch Break Zumba</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="text-sm font-semibold">4.7</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-secondary">Common Plaza • Tomorrow at 12:00 PM</p>
+<p class="mt-1 font-body-md text-body-md text-ink"> </p>
+</div>
+
+<!-- Activity Card 8: Boxing -->
+<div class="group cursor-pointer">
+<div class="relative aspect-square rounded-xl overflow-hidden mb-3 bg-surface-variant">
+<img alt="AfterWork Box-Fit" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&amp;fit=crop&amp;q=80&amp;w=800">
+<div class="absolute top-3 left-3 px-3 py-1 bg-white border border-hairline rounded-full flex items-center gap-1 shadow-sm">
+<span class="text-rausch font-bold text-[13px]">78% Match</span>
+</div>
+<button class="absolute top-3 right-3 p-2 text-white/90 hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 0;">favorite</span>
+</button>
+</div>
+<div class="flex justify-between items-start">
+<h3 class="font-display-md text-display-md text-ink group-hover:underline">AfterWork Box-Fit</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="text-sm font-semibold">4.9</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-secondary">Sports Hall • Fri, 6:00 PM</p>
+<p class="mt-1 font-body-md text-body-md text-ink"> <span class="font-normal text-secondary">Free for staff</span></p>
+</div></div>
+</section>
+<!-- Footer Shell -->
+<footer class="w-full mt-auto border-t border-hairline dark:border-outline-variant bg-canvas dark:bg-background">
+<div class="max-w-7xl mx-auto px-8 py-12 flex justify-between items-center">
+<div class="flex flex-col gap-2">
+<span class="font-display-md text-display-md text-ink dark:text-on-background">AfterWork</span>
+<p class="font-caption text-caption text-secondary">© 2026 AfterWork Agent platform. All rights reserved.</p>
+</div>
+<div class="flex gap-6">
+<a class="font-body-sm text-body-sm text-secondary dark:text-secondary-fixed-dim hover:text-rausch transition-colors" href="#">Privacy</a>
+<a class="font-body-sm text-body-sm text-secondary dark:text-secondary-fixed-dim hover:text-rausch transition-colors" href="#">Terms</a>
+<a class="font-body-sm text-body-sm text-secondary dark:text-secondary-fixed-dim hover:text-rausch transition-colors" href="#">Cookies</a>
+<a class="font-body-sm text-body-sm text-secondary dark:text-secondary-fixed-dim hover:text-rausch transition-colors" href="#">Contact</a>
+</div>
+</div>
+</footer>
+</main>
+<!-- ALP Agent Floating Indicator (Subtle Interaction) -->
+<div class="fixed bottom-8 right-8 z-50" id="alp-concierge">
+<div class="relative group">
+<div class="absolute -top-12 right-0 bg-ink text-white px-4 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                How can I help with your schedule?
+            </div>
+<button class="w-14 h-14 bg-rausch rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined text-white text-[28px]" data-icon="auto_awesome">auto_awesome</span>
+</button>
+</div>
+</div>
+<script>
+        // Simple scroll effect for Header
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 20) {
+                header.classList.add('border-b', 'border-hairline');
+            } else {
+                header.classList.remove('border-b', 'border-hairline');
+            }
+        });
+
+        // Hover effect for Concierge
+        const alpBtn = document.getElementById('alp-concierge');
+        alpBtn.addEventListener('mouseenter', () => {
+            // Placeholder for voice/chat activation micro-interaction
+        });
+    </script>
+
+
+
+
+</body></html>

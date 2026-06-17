@@ -1,0 +1,330 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>My Profile | AfterWork Agent</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "rausch": "#FF385C",
+                      "primary": "#ba0036",
+                      "primary-container": "#e21e4a",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "hairline": "#DDDDDD",
+                      "surface-container-low": "#f5f3f3",
+                      "surface-container-highest": "#e4e2e2",
+                      "on-primary-fixed": "#40000d",
+                      "on-secondary-fixed-variant": "#474746",
+                      "on-error": "#ffffff",
+                      "surface-dim": "#dbdad9",
+                      "surface-soft": "#F7F7F7",
+                      "on-secondary": "#ffffff",
+                      "surface-variant": "#e4e2e2",
+                      "tertiary-fixed-dim": "#ddb7ff",
+                      "outline-variant": "#e5bdbe",
+                      "on-primary": "#ffffff",
+                      "tertiary-container": "#915bc5",
+                      "primary-fixed-dim": "#ffb2b6",
+                      "canvas": "#FFFFFF",
+                      "secondary": "#5f5e5e",
+                      "tertiary": "#7742aa",
+                      "on-secondary-fixed": "#1b1c1c",
+                      "background": "#fbf9f8",
+                      "tertiary-fixed": "#f0dbff",
+                      "surface": "#fbf9f8",
+                      "on-surface": "#1b1c1c",
+                      "on-tertiary-fixed": "#2c0050",
+                      "inverse-primary": "#ffb2b6",
+                      "on-tertiary-fixed-variant": "#602a93",
+                      "on-tertiary": "#ffffff",
+                      "luxe-purple": "#460479",
+                      "secondary-container": "#e2dfde",
+                      "rausch-active": "#E00B41",
+                      "secondary-fixed": "#e5e2e1",
+                      "inverse-on-surface": "#f2f0f0",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface-variant": "#5c3f41",
+                      "on-tertiary-container": "#fffbff",
+                      "surface-container-high": "#e9e8e7",
+                      "on-secondary-container": "#636262",
+                      "inverse-surface": "#303031",
+                      "on-background": "#1b1c1c",
+                      "outline": "#906f70",
+                      "on-error-container": "#93000a",
+                      "surface-container": "#efeded",
+                      "error": "#ba1a1a",
+                      "on-primary-fixed-variant": "#920029",
+                      "surface-bright": "#fbf9f8",
+                      "surface-tint": "#be0038",
+                      "ink": "#222222",
+                      "primary-fixed": "#ffdada",
+                      "on-primary-container": "#fffbff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-xs": "4px",
+                      "stack-xl": "48px",
+                      "stack-lg": "24px",
+                      "grid-gutter": "24px",
+                      "stack-sm": "8px",
+                      "grid-margin": "80px",
+                      "stack-md": "16px",
+                      "section-padding": "80px"
+              },
+              "fontFamily": {
+                      "display-md": ["Inter"],
+                      "badge": ["Inter"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "display-xl": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "button-md": ["Inter"],
+                      "nav-link": ["Inter"],
+                      "caption": ["Inter"]
+              },
+              "fontSize": {
+                      "display-md": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "badge": ["11px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "display-lg": ["22px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                      "display-xl": ["28px", {"lineHeight": "1.4", "fontWeight": "700"}],
+                      "body-sm": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                      "button-md": ["16px", {"lineHeight": "1", "fontWeight": "600"}],
+                      "nav-link": ["16px", {"lineHeight": "1.25", "fontWeight": "600"}],
+                      "caption": ["14px", {"lineHeight": "1.3", "fontWeight": "500"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .active-pill { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .active-pill:active { transform: scale(0.96); }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); }
+    </style>
+</head>
+<body class="bg-canvas text-ink selection:bg-rausch selection:text-white">
+<div class="flex">
+<!-- Sidebar Navigation -->
+<aside class="flex flex-col h-screen py-8 px-6 h-full w-64 fixed left-0 top-0 bg-canvas dark:bg-surface-container-lowest border-r border-hairline dark:border-outline-variant z-50">
+<div class="mb-12 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center border border-hairline overflow-hidden">
+<img alt="AfterWork Agent Concierge Alp" class="w-full h-full object-contain p-1" src="https://lh3.googleusercontent.com/aida/AP1WRLvOiaJlD5i6KEkQx01uJu2pOwSjYEffKxNTey6rylWLO7sw3zRfWorYwz8xbK8p18EKXaDvty_SUv6UXhagQPuzO2dfpOuC4gC_cjTek0tr_FxnyRhlY3uJixI4gAiT7JPvj2bMrMthVuFWwBmFoh-Q3EI66iXjsr_Ld2HeXZkBbd-6Xn-z45K34UaPpTbnaOPizA9ikONHmfagIO-wzqxk2jgPgfLvVyst0JSgNoZFTc5vPd8RqMeHYlg">
+</div>
+<div>
+<h1 class="font-display-md text-display-md text-ink dark:text-on-background tracking-tight">AfterWork</h1>
+
+</div>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 font-nav-link text-nav-link text-secondary dark:text-on-secondary-fixed-variant hover:bg-surface-soft transition-colors duration-200 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-rausch">explore</span>
+<span class="">Discover</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 font-nav-link text-nav-link text-secondary dark:text-on-secondary-fixed-variant hover:bg-surface-soft transition-colors duration-200 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-rausch">smart_toy</span>
+<span class="">My Agent</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 font-nav-link text-nav-link text-secondary dark:text-on-secondary-fixed-variant hover:bg-surface-soft transition-colors duration-200 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-rausch">add_circle</span>
+<span class="">Create Activity</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 font-nav-link text-nav-link text-rausch font-bold border-r-2 border-rausch bg-surface-container-low transition-transform scale-[0.98] rounded-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">person</span>
+<span class="">Profile</span>
+</a>
+</nav>
+<div class="mt-auto space-y-2 border-t border-hairline pt-6">
+<a class="flex items-center gap-3 px-4 py-3 font-nav-link text-nav-link text-secondary hover:text-ink transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 font-nav-link text-nav-link text-secondary hover:text-ink transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="">Help</span>
+</a>
+<div class="mt-4 px-4">
+
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 min-h-screen">
+<div class="max-w-[1000px] mx-auto px-grid-margin py-section-padding">
+<!-- Profile Header -->
+<header class="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-16">
+<div class="flex items-center gap-8">
+<div class="relative group">
+<div class="w-32 h-32 rounded-full border border-hairline overflow-hidden shadow-sm">
+<img alt="Nguyen Thanh An Profile Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmWfvsLyu_azF3tdLua1Ab-8Cdz8q371_ss07Y23Stqxq-TWSO5vWJhK2fSHIqPma-SEY8RzZuFqATQUxyTVYTCvNNzvUnueuKsORGER6qo0A_BSScZFnaycsOcDSv-guzq_p-yEhk0dxmSTspSBFiteryywLe8z1DSMp5r5v5vC8nYTgV8zMMel3RyWKSMe-gyANz5_NjHHt-NuQ0ty4WLe2C9zeecFaXN6kCZpWzNcn02scqhiOum3ztwUdHFHf_R5QBQjOAlFc">
+</div>
+<button class="absolute bottom-0 right-0 p-2 bg-white border border-hairline rounded-full shadow-md hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-rausch text-[18px]">photo_camera</span>
+</button>
+</div>
+<div class="space-y-1">
+<h2 class="font-display-xl text-display-xl text-ink">Nguyen Thanh An</h2>
+<p class="font-body-md text-body-md text-secondary">Senior Software Engineer</p>
+<div class="flex items-center gap-2 pt-2">
+
+
+</div>
+</div>
+</div>
+<button class="flex items-center gap-2 px-6 py-2.5 border border-ink text-ink rounded-lg font-button-md text-button-md hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+                        Edit Profile
+                    </button>
+</header>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-stack-xl">
+<!-- Left Column: Info -->
+<div class="md:col-span-8 space-y-16">
+<!-- Personal Info -->
+<section>
+<h3 class="font-display-lg text-display-lg text-ink mb-8 border-b border-hairline pb-4">Personal Details</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-y-10 gap-x-8">
+<div>
+<label class="block font-caption text-caption text-secondary uppercase tracking-wider mb-2">Full Name</label>
+<p class="font-body-md text-body-md text-ink">Nguyen Thanh An</p>
+</div>
+<div>
+<label class="block font-caption text-caption text-secondary uppercase tracking-wider mb-2">domain</label>
+<p class="font-body-md text-body-md text-ink">annt7</p>
+</div>
+<div>
+<label class="block font-caption text-caption text-secondary uppercase tracking-wider mb-2">Birthdate</label>
+<p class="font-body-md text-body-md text-ink">6 April 1995</p>
+</div>
+<div>
+<label class="block font-caption text-caption text-secondary uppercase tracking-wider mb-2">Horoscope</label>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-rausch text-[20px]">auto_awesome</span>
+<p class="font-body-md text-body-md text-ink">Aries</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Organizational Details -->
+<section>
+<h3 class="font-display-lg text-display-lg text-ink mb-8 border-b border-hairline pb-4">Work &amp; Organization</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+<div class="p-6 rounded-xl border border-hairline bg-surface-bright hover:shadow-md transition-shadow" style="transform: translateY(0px);">
+<label class="block font-caption text-caption text-secondary uppercase tracking-wider mb-3">Business Unit (PY)</label>
+<p class="font-display-md text-display-md text-ink">ZP</p>
+</div>
+<div class="p-6 rounded-xl border border-hairline bg-surface-bright hover:shadow-md transition-shadow" style="transform: translateY(0px);">
+<label class="block font-caption text-caption text-secondary uppercase tracking-wider mb-3"><span style="letter-spacing: 0.7px;" class="">Department</span>&nbsp;</label>
+<p class="font-display-md text-display-md text-ink">&nbsp;N/A</p>
+</div>
+<div class="p-6 rounded-xl border border-hairline bg-surface-bright hover:shadow-md transition-shadow" style="transform: translateY(0px);">
+<label class="block font-caption text-caption text-secondary uppercase tracking-wider mb-3">Group</label>
+<p class="font-display-md text-display-md text-ink">N/A</p>
+</div>
+<div class="p-6 rounded-xl border border-hairline bg-surface-bright hover:shadow-md transition-shadow" style="transform: translateY(0px);">
+<label class="block font-caption text-caption text-secondary uppercase tracking-wider mb-3">Squad</label>
+<p class="font-display-md text-display-md text-ink">Consumer Solutions</p>
+</div>
+</div>
+</section>
+<!-- Interests -->
+<section>
+<div class="flex items-center justify-between mb-8">
+<h3 class="font-display-lg text-display-lg text-ink">Interests &amp; Hobbies</h3>
+<button class="text-rausch font-button-md text-body-sm hover:underline">Manage Interests</button>
+</div>
+<div class="flex flex-wrap gap-3">
+<span class="px-5 py-2.5 rounded-full border border-hairline bg-white hover:border-rausch hover:text-rausch cursor-pointer transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">sports_soccer</span>Football
+                                </span>
+<span class="px-5 py-2.5 rounded-full border border-hairline bg-white hover:border-rausch hover:text-rausch cursor-pointer transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">self_improvement</span>
+                                    Yoga
+                                </span>
+<span class="px-5 py-2.5 rounded-full border border-hairline bg-white hover:border-rausch hover:text-rausch cursor-pointer transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">casino</span>
+                                    Board Games
+                                </span>
+<span class="px-5 py-2.5 rounded-full border border-hairline bg-white hover:border-rausch hover:text-rausch cursor-pointer transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">local_cafe</span>
+                                    Specialty Coffee
+                                </span>
+<span class="px-5 py-2.5 rounded-full border border-hairline bg-white hover:border-rausch hover:text-rausch cursor-pointer transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">landscape</span>
+                                    Photography
+                                </span>
+<button class="px-5 py-2.5 rounded-full border border-dashed border-secondary text-secondary hover:border-ink hover:text-ink flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                                    Add New
+                                </button>
+</div>
+</section>
+</div>
+<!-- Right Column: Concierge Sidebar -->
+<div class="md:col-span-4">
+
+<!-- Completion Status -->
+<div class="mt-8 p-6 rounded-2xl border border-hairline">
+<div class="flex items-center justify-between mb-4">
+<span class="font-caption text-caption text-secondary">Profile Strength</span>
+<span class="font-nav-link text-ink">85%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-rausch rounded-full" style="width: 85%"></div>
+</div>
+<p class="mt-4 font-caption text-caption text-secondary">Add a 'Personal Bio' to reach 100% and unlock more personalized agent recommendations.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="mt-auto border-t border-hairline bg-canvas dark:bg-background">
+<div class="max-w-7xl mx-auto px-8 py-12 flex justify-between items-center">
+<div class="space-y-2">
+<div class="font-display-md text-display-md text-ink dark:text-on-background">AfterWork</div>
+<p class="font-caption text-caption text-secondary">© 2026 AfterWork Agent platform. All rights reserved.</p>
+</div>
+<div class="flex gap-8">
+<a class="font-body-sm text-body-sm text-secondary hover:text-rausch transition-colors" href="#">Privacy</a>
+<a class="font-body-sm text-body-sm text-secondary hover:text-rausch transition-colors" href="#">Terms</a>
+<a class="font-body-sm text-body-sm text-secondary hover:text-rausch transition-colors" href="#">Cookies</a>
+<a class="font-body-sm text-body-sm text-secondary hover:text-rausch transition-colors" href="#">Contact</a>
+</div>
+</div>
+</footer>
+</main>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.hover\\:shadow-md');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-2px)';
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+
+
+
+
+
+
+</body></html>

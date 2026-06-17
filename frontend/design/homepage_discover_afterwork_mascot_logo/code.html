@@ -1,0 +1,314 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Homepage - Discover AfterWork</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#2c0050",
+                      "on-secondary-container": "#636262",
+                      "on-error": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "luxe-purple": "#460479",
+                      "primary-container": "#e21e4a",
+                      "tertiary": "#7742aa",
+                      "on-primary-fixed-variant": "#920029",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-secondary": "#ffffff",
+                      "on-surface": "#1b1c1c",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-fixed-variant": "#602a93",
+                      "secondary-container": "#e2dfde",
+                      "surface-bright": "#fbf9f8",
+                      "surface-variant": "#e4e2e2",
+                      "secondary": "#5f5e5e",
+                      "surface-container-low": "#f5f3f3",
+                      "error-container": "#ffdad6",
+                      "surface-container-high": "#e9e8e7",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "inverse-on-surface": "#f2f0f0",
+                      "rausch": "#FF385C",
+                      "primary": "#ba0036",
+                      "hairline": "#DDDDDD",
+                      "on-surface-variant": "#5c3f41",
+                      "on-secondary-fixed": "#1b1c1c",
+                      "surface-container": "#efeded",
+                      "tertiary-fixed-dim": "#ddb7ff",
+                      "on-background": "#1b1c1c",
+                      "canvas": "#FFFFFF",
+                      "tertiary-fixed": "#f0dbff",
+                      "tertiary-container": "#915bc5",
+                      "surface-soft": "#F7F7F7",
+                      "ink": "#222222",
+                      "primary-fixed-dim": "#ffb2b6",
+                      "surface-dim": "#dbdad9",
+                      "surface": "#fbf9f8",
+                      "background": "#fbf9f8",
+                      "on-error-container": "#93000a",
+                      "primary-fixed": "#ffdada",
+                      "on-tertiary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "outline-variant": "#e5bdbe",
+                      "surface-tint": "#be0038",
+                      "on-secondary-fixed-variant": "#474746",
+                      "surface-container-highest": "#e4e2e2",
+                      "inverse-primary": "#ffb2b6",
+                      "on-tertiary-container": "#fffbff",
+                      "rausch-active": "#E00B41",
+                      "on-primary-container": "#fffbff",
+                      "outline": "#906f70",
+                      "on-primary-fixed": "#40000d",
+                      "inverse-surface": "#303031"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-xs": "4px",
+                      "stack-md": "16px",
+                      "stack-lg": "24px",
+                      "grid-gutter": "24px",
+                      "section-padding": "80px",
+                      "grid-margin": "80px",
+                      "stack-sm": "8px",
+                      "stack-xl": "48px"
+              },
+              "fontFamily": {
+                      "display-xl": ["Inter"],
+                      "button-md": ["Inter"],
+                      "display-md": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "display-xl-mobile": ["Inter"],
+                      "caption": ["Inter"],
+                      "nav-link": ["Inter"],
+                      "body-md": ["Inter"],
+                      "badge": ["Inter"]
+              },
+              "fontSize": {
+                      "display-xl": ["28px", {"lineHeight": "1.4", "fontWeight": "700"}],
+                      "button-md": ["16px", {"lineHeight": "1", "fontWeight": "600"}],
+                      "display-md": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                      "display-lg": ["22px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                      "display-xl-mobile": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                      "caption": ["14px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                      "nav-link": ["16px", {"lineHeight": "1.25", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "badge": ["11px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fbf9f8; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .custom-shadow-hover:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+    </style>
+</head>
+<body class="antialiased text-ink">
+<!-- TopNavBar Logic (Suppressing as per Task focusing on the 3-column layout) -->
+<!-- Applying the 3-column Layout -->
+<div class="flex h-screen overflow-hidden">
+<!-- LEFT SIDEBAR: Fixed width, white background -->
+<aside class="w-64 bg-canvas border-r border-hairline flex flex-col hidden md:flex">
+<div class="p-stack-lg flex items-center space-x-2"><div class="flex items-center space-x-3"><img alt="ALP Mascot" class="h-10 w-10 object-contain rounded-md" src="https://lh3.googleusercontent.com/aida/AP1WRLvOiaJlD5i6KEkQx01uJu2pOwSjYEffKxNTey6rylWLO7sw3zRfWorYwz8xbK8p18EKXaDvty_SUv6UXhagQPuzO2dfpOuC4gC_cjTek0tr_FxnyRhlY3uJixI4gAiT7JPvj2bMrMthVuFWwBmFoh-Q3EI66iXjsr_Ld2HeXZkBbd-6Xn-z45K34UaPpTbnaOPizA9ikONHmfagIO-wzqxk2jgPgfLvVyst0JSgNoZFTc5vPd8RqMeHYlg"><span class="font-display-md text-display-md font-bold tracking-tight">AfterWork Agent</span></div></div>
+<nav class="flex-1 mt-stack-md px-stack-sm space-y-1"><div class="px-stack-md mb-4"><button class="w-full flex items-center justify-center space-x-2 bg-rausch text-white py-3 rounded-lg font-button-md hover:bg-rausch-active transition-all shadow-sm"><span class="material-symbols-outlined text-[20px]">add</span><span class="">New Chat</span></button></div>
+<!-- Discover (Active) -->
+<a class="flex items-center space-x-3 px-stack-md py-3 bg-surface-soft text-rausch rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">explore</span>
+<span class="font-nav-link text-nav-link">Discover</span>
+</a>
+<!-- My Agents -->
+<a class="flex items-center space-x-3 px-stack-md py-3 text-secondary hover:bg-surface-soft hover:text-ink rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-nav-link text-nav-link">My Agent</span>
+</a>
+<!-- Create Activity -->
+<a class="flex items-center space-x-3 px-stack-md py-3 text-secondary hover:bg-surface-soft hover:text-ink rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="font-nav-link text-nav-link">Create Your Activity</span>
+</a>
+<!-- Profile -->
+<a class="flex items-center space-x-3 px-stack-md py-3 text-secondary hover:bg-surface-soft hover:text-ink rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-nav-link text-nav-link">Notifications</span>
+</a><a class="flex items-center space-x-3 px-stack-md py-3 text-secondary hover:bg-surface-soft hover:text-ink rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="font-nav-link text-nav-link">Profile</span>
+</a>
+<div class="mt-stack-lg pt-stack-md border-t border-hairline px-stack-md"><h3 class="text-[10px] font-bold uppercase tracking-wider text-secondary mb-2">Recents</h3><div class="space-y-1"><a href="#" class="flex items-center space-x-3 py-2 text-secondary hover:text-ink transition-colors group"><span class="material-symbols-outlined text-[18px]">chat_bubble</span><span class="text-body-sm truncate">Football match tonight</span></a><a href="#" class="flex items-center space-x-3 py-2 text-secondary hover:text-ink transition-colors group"><span class="material-symbols-outlined text-[18px]">chat_bubble</span><span class="text-body-sm truncate">Yoga class booking</span></a><a href="#" class="flex items-center space-x-3 py-2 text-secondary hover:text-ink transition-colors group"><span class="material-symbols-outlined text-[18px]">chat_bubble</span><span class="text-body-sm truncate">Product team lunch</span></a></div></div></nav>
+</aside>
+<!-- CENTER PANEL: Conversational Interface -->
+<main class="flex-1 flex flex-col bg-canvas relative">
+<!-- Header for Mobile/Center -->
+<header class="h-20 border-b border-hairline flex items-center justify-between px-stack-lg md:hidden"><div class="flex items-center space-x-2"><img alt="ALP Mascot" class="h-8 w-8 object-contain rounded-md" src="https://lh3.googleusercontent.com/aida/AP1WRLvOiaJlD5i6KEkQx01uJu2pOwSjYEffKxNTey6rylWLO7sw3zRfWorYwz8xbK8p18EKXaDvty_SUv6UXhagQPuzO2dfpOuC4gC_cjTek0tr_FxnyRhlY3uJixI4gAiT7JPvj2bMrMthVuFWwBmFoh-Q3EI66iXjsr_Ld2HeXZkBbd-6Xn-z45K34UaPpTbnaOPizA9ikONHmfagIO-wzqxk2jgPgfLvVyst0JSgNoZFTc5vPd8RqMeHYlg"><span class="font-display-md text-display-md font-bold text-rausch">AfterWork Agent</span></div><span class="material-symbols-outlined text-ink">menu</span></header>
+<div class="flex-1 overflow-y-auto no-scrollbar p-stack-xl flex flex-col items-center">
+<div class="max-w-2xl w-full space-y-stack-xl">
+<!-- AI Concierge Entry -->
+<div id="hp-welcome" class="flex flex-col items-center text-center space-y-stack-md animate-fade-in animate-in fade-in duration-700">
+<div class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center text-rausch">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">smart_toy</span>
+</div>
+
+<h1 class="font-display-xl text-display-xl-mobile md:text-display-xl text-ink max-w-lg">
+                            Hi An! What are you in the mood for after work today?
+                        </h1>
+<div class="inline-flex items-center space-x-2 bg-luxe-purple/10 text-luxe-purple px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+</div>
+</div>
+<!-- Suggested Chips Area -->
+</div>
+</div>
+<!-- Chat Input Area -->
+<div class="p-stack-lg bg-canvas"><div class="max-w-3xl mx-auto relative pb-4">
+    <div class="relative flex items-center bg-canvas border border-hairline rounded-full shadow-sm px-6 py-2 focus-within:border-ink transition-all">
+        <textarea class="flex-1 bg-transparent border-none focus:ring-0 font-body-md text-body-md py-3 resize-none no-scrollbar" placeholder="Type to chat with ALP..." rows="1"></textarea>
+        <button class="ml-2 w-10 h-10 bg-rausch text-white rounded-full flex items-center justify-center hover:bg-rausch-active transition-all shrink-0">
+            <span class="material-symbols-outlined text-[20px]">send</span>
+        </button>
+    </div>
+</div></div>
+</main>
+<!-- RIGHT PANEL: For You -->
+<aside class="w-96 bg-surface border-l border-hairline hidden lg:flex flex-col">
+<div class="p-stack-lg flex items-center justify-between">
+<h2 class="font-display-lg text-display-lg">For You</h2>
+<a class="font-button-md text-body-sm tracking-tight transition-colors" href="#" onclick="showView('discover');return false;" style="color:#FF385C;font-weight:700;text-decoration:none;">VIEW ALL</a>
+</div>
+<div class="flex-1 overflow-y-auto no-scrollbar px-stack-lg space-y-stack-lg pb-stack-xl">
+<!-- Activity Card 1 -->
+<div class="bg-canvas border border-hairline rounded-xl overflow-hidden group custom-shadow-hover transition-all duration-300 p-4 space-y-4">
+    <div class="relative h-48 rounded-lg overflow-hidden">
+        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKHpYjOG51dxgPaKH4DkOZ2A5exrVFEUdSAwwHHbToIXciEmqGxf6K5dDcEhjMf3Qk2HXzxE2NtGyEtBU4Ti84trBw4VaRAhrOhtDeVIHKuaG7lz0TtbyLUxlOxmSI_ra5XIILYb1IPwXXSOYEe6Qx1hDEoqrf-Q0jVrgY-xa-9wDlzXo4DH_6Zgg50RN6qTz9Zd4QKaEsLZp7URnOZO2XF9EvtFHDI6Yp3GwfdD7L9m5tbwNxds1toMQ34R1VqMoFWNcqNfeRt2s">
+        <div class="absolute top-3 left-3 bg-white px-3 py-1 rounded-full flex items-center space-x-1 shadow-sm">
+            <span class="material-symbols-outlined text-rausch text-[14px]" style="font-variation-settings: &quot;FILL&quot; 1;">bolt</span>
+            <span class="font-badge text-badge text-rausch">Sports</span>
+        </div>
+    </div>
+    <div class="space-y-1">
+        <h3 class="font-bold text-display-md text-ink">Pickleball Night</h3>
+        <div class="flex items-center space-x-2 text-secondary font-body-sm"><div class="flex items-center space-x-1"><span class="material-symbols-outlined text-[18px]">group</span><span class="">6</span></div><span class="mx-1">•</span><span class="">Thu 6 - 8 PM</span></div><div class="flex items-center space-x-1 text-secondary font-body-sm mt-1"><span class="material-symbols-outlined text-[18px]">location_on</span><span class="">Central Pitch</span></div>
+    </div>
+    <div class="bg-surface-soft p-3 rounded-lg border border-hairline/50">
+        <p class="font-body-sm text-body-sm italic text-secondary">
+            "4 attendees share your interest in <span class="text-ink font-medium">Product Design and Coffee.</span>"
+        </p>
+    </div>
+    <button class="w-full py-3 bg-rausch text-white font-button-md rounded-lg hover:bg-rausch-active transition-all">
+        Join Activity
+    </button>
+</div>
+<!-- Activity Card 2 -->
+<div class="bg-canvas border border-hairline rounded-xl overflow-hidden group custom-shadow-hover transition-all duration-300 p-4 space-y-4">
+    <div class="relative h-48 rounded-lg overflow-hidden">
+        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3KH9lFPDsVCH1j2dpZ-sc8rX8guEfP25FKXX6eXJ5NLs-Bidpdyi9mgyCT_58MxtgunfaZShLVJGVbRUO6yfxpnmrvwHJpsJVURKcaPvxWV7XhT7y5f0KsBf4Ke8UlyL9wL3LdCKUdfMT1a_eDMjJquu8QMiakDWsEFR1x9MQZ6llq6c7or4wDhNbhqaW6iuFkGc-aHkvPzNlvEdv-O8sGlUtHsX0WW3lplzD57XGtMBbpavsZaqoLU6VdQJX9lxP4X-oKj1nuss">
+        <div class="absolute top-3 left-3 bg-white px-3 py-1 rounded-full flex items-center space-x-1 shadow-sm">
+            <span class="material-symbols-outlined text-rausch text-[14px]" style="font-variation-settings: &quot;FILL&quot; 1;">bolt</span>
+            <span class="font-badge text-badge text-rausch">Entertainment</span>
+        </div>
+    </div>
+    <div class="space-y-1">
+        <h3 class="font-bold text-display-md text-ink">Hidden Jazz Live Band</h3>
+        <div class="flex items-center space-x-2 text-secondary font-body-sm"><div class="flex items-center space-x-1"><span class="material-symbols-outlined text-[18px]">group</span><span class="">12</span></div><span class="mx-1">•</span><span class="">Friday 7 PM</span></div><div class="flex items-center space-x-1 text-secondary font-body-sm mt-1"><span class="material-symbols-outlined text-[18px]">location_on</span><span class="">The Jazz Hole</span></div>
+    </div>
+    <div class="bg-surface-soft p-3 rounded-lg border border-hairline/50">
+        <div class="flex items-center space-x-2 text-luxe-purple mb-1">
+            <span class="material-symbols-outlined text-[14px]">psychology</span>
+            <span class="font-badge text-badge uppercase">Entertainment</span>
+        </div>
+        <p class="font-body-sm text-body-sm text-ink">
+            Great for meeting people from <span class="font-semibold">Product teams</span> at Google and Meta.
+        </p>
+    </div>
+    <button class="w-full py-3 bg-rausch text-white font-button-md rounded-lg hover:bg-rausch-active transition-all">
+        Join Activity&nbsp;&nbsp;</button>
+</div>
+</div>
+</aside>
+</div>
+<!-- Footer for Mobile View (Reusing provided Footer logic but adapting for 3-column) -->
+<footer class="md:hidden fixed bottom-0 w-full bg-canvas border-t border-hairline py-2 px-stack-lg flex justify-around items-center z-50">
+<a class="flex flex-col items-center text-rausch" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">explore</span>
+<span class="text-[10px] font-bold">Discover</span>
+</a>
+<a class="flex flex-col items-center text-secondary" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="text-[10px]">Agent</span>
+</a>
+<a class="flex flex-col items-center text-secondary" href="#">
+<span class="material-symbols-outlined text-rausch">add_circle</span>
+<span class="text-[10px]">Create</span>
+</a>
+<a class="flex flex-col items-center text-secondary" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="text-[10px]">Chat</span>
+</a>
+<a class="flex flex-col items-center text-secondary" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-[10px]">Profile</span>
+</a>
+</footer>
+<script>
+        // Micro-interactions
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.classList.add('scale-[0.98]', 'opacity-90');
+            });
+            el.addEventListener('mouseup', () => {
+                el.classList.remove('scale-[0.98]', 'opacity-90');
+            });
+            el.addEventListener('mouseleave', () => {
+                el.classList.remove('scale-[0.98]', 'opacity-90');
+            });
+        });
+
+        // Simple Fade In Animation for Chat Elements
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in', 'fade-in', 'duration-700');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-fade-in').forEach(el => observer.observe(el));
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>

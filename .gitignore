@@ -20,3 +20,24 @@ venv/
 # AgentBase
 .agentbase/
 .agentbase-state.json
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Generated component bundles (rebuilt at Streamlit startup from design/ sources)
+frontend/auth_component/
+frontend/create_component/
+frontend/discover_component/
+frontend/homepage_component/
+frontend/main_component/
+frontend/onboarding1_component/
+frontend/onboarding2_component/
+frontend/profile_component/
+
+# Test cache
+.pytest_cache/
+
+# Generated evaluation artifacts
+docs/evaluation_raw_*.json
+docs/evaluation_report_*.md

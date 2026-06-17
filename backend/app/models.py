@@ -70,6 +70,9 @@ class Activity(Base):
     current_participants = Column(Integer, default=1)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
     source = Column(String, default="user_created")  # "user_created" | "fixed"
+    location_type = Column(String, default="off_campus")  # "on_campus" | "off_campus"
+    open_to = Column(String, default="all")  # "all" | "same_bu"
+    difficulty = Column(String, nullable=True)  # "Beginner" | "Intermediate" | "Advanced" | "All Levels"
     guidelines = Column(Text, nullable=True)
     status = Column(String, default="active")
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -190,4 +193,48 @@ class Notification(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
+    user = relationship("User")
+
+class RecommendationSession(Base):
+    __tablename__ = "recommendation_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
+    attempt_number = Column(Integer, default=1, nullable=False)
+    attempt1_shown_ids = Column(Text, default="[]")   # JSON list of int
+    attempt2_filters = Column(Text, default="{}")      # JSON dict
+    attempt2_substate = Column(String, nullable=True)  # "awaiting_answers" | "filters_applied" | None
+    wellbeing_group = Column(String, nullable=True)    # burnout | isolation | career_anxiety | fatigue | emotional_stress
+    pending_activity_json = Column(Text, nullable=True)  # JSON: last top-recommended activity {id, title, type, start_time, location}
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+
+class FixedActivityParticipant(Base):
+    """Tracks who joined a scheduled class for the current week. Resets each Monday."""
+    __tablename__ = "fixed_activity_participants"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    gym_class_id = Column(Integer, ForeignKey("fixed_activities.id"), nullable=False)
+    week_start = Column(Date, nullable=False)   # Monday of the week
+    joined_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+    gym_class = relationship("FixedActivity")
+
+    __table_args__ = (UniqueConstraint("user_id", "gym_class_id", "week_start"),)
+
+
+class PendingExtraction(Base):
+    __tablename__ = "pending_extractions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
+    partial_data = Column(Text, default="{}")    # JSON: extracted fields so far (nulls omitted)
+    missing_fields = Column(Text, default="[]")  # JSON list of required field names still needed
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
     user = relationship("User")

@@ -3,9 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timedelta, date
+from collections import Counter
 
-from backend.app.database import get_db, init_db
-from backend.app.models import User, Activity, FixedActivity, ActivityParticipant, Memory, RecommendationLog, UserExperience, UserBehavioralInterest, ParticipationJournal, Notification
+from backend.app.database import get_db, init_db, seed_fixed_activities
+from backend.app.models import User, Activity, FixedActivity, ActivityParticipant, Memory, RecommendationLog, UserExperience, UserBehavioralInterest, ParticipationJournal, Notification, RecommendationSession, PendingExtraction, FixedActivityParticipant
 from backend.app.schemas import (
     UserCreate, UserResponse, ActivityCreate, ActivityResponse,
     FixedActivityResponse, MemoryResponse, ChatRequest, ChatResponse,
@@ -14,7 +15,7 @@ from backend.app.schemas import (
     UserExperienceCreate, UserExperienceResponse,
     JournalOption, JournalPendingResponse, JournalResolveRequest, NotificationResponse,
     UserLoginRequest, UserLoginResponse, UserOnboardRequest,
-    ConversationStarterResponse
+    ConversationStarterResponse, RecommendationItem, BrowseActivityItem
 )
 from backend.app.agents.graph import run_agent_flow
 from backend.app.agents.llm import llm_client
@@ -30,14 +31,43 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+def _current_week_start() -> "date":
+    from datetime import date, timedelta
+    today = date.today()
+    return today - timedelta(days=today.weekday())  # Monday of current week
+
+
+def _apply_schema_migrations():
+    """Idempotent column migrations — run at startup after create_all."""
+    from sqlalchemy import text as sa_text
+    from backend.app.database import engine
+    with engine.connect() as conn:
+        is_pg = engine.dialect.name == "postgresql"
+        migrations = [
+            # pending_activity_json added 2026-06-14
+            "ALTER TABLE recommendation_sessions ADD COLUMN IF NOT EXISTS pending_activity_json TEXT;"
+            if is_pg else
+            "ALTER TABLE recommendation_sessions ADD COLUMN pending_activity_json TEXT;",
+            # fixed_activity_participants table (created via create_all, but ensure it exists)
+            # create_all handles this; entry here is a no-op guard
+        ]
+        for sql in migrations:
+            try:
+                conn.execute(sa_text(sql))
+                conn.commit()
+            except Exception:
+                conn.rollback()  # column already exists — safe to ignore
+
+
 @app.on_event("startup")
 def on_startup():
     init_db()
+    _apply_schema_migrations()
 
 @app.get("/health")
 def health():
@@ -53,8 +83,12 @@ def chat_with_agent(req: ChatRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User profile not found")
         
     try:
-        response_text = run_agent_flow(user_id=req.user_id, message=req.message)
-        return ChatResponse(response=response_text)
+        response_text, activity_created, activity_type = run_agent_flow(
+            user_id=req.user_id,
+            message=req.message,
+            conversation_history=req.conversation_history,
+        )
+        return ChatResponse(response=response_text, activity_created=activity_created, activity_type=activity_type)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Agent workflow error: {str(e)}")
 
@@ -187,26 +221,217 @@ def list_activities(db: Session = Depends(get_db)):
     activities = db.query(Activity).order_by(Activity.start_time.asc()).all()
     return [_enrich_activity(a, db) for a in activities]
 
+@app.get("/api/activities/browse", response_model=List[BrowseActivityItem])
+def browse_activities(user_id: int, db: Session = Depends(get_db)):
+    joined_activity_ids = {
+        p.activity_id for p in db.query(ActivityParticipant).filter(ActivityParticipant.user_id == user_id).all()
+    }
+    joined_gym_ids = {
+        e.gym_class_id for e in db.query(UserExperience).filter(
+            UserExperience.user_id == user_id,
+            UserExperience.gym_class_id.isnot(None)
+        ).all()
+    }
+
+    items: List[BrowseActivityItem] = []
+
+    _WEEKDAYS_FULL = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+    _DAY_ABBR = {"Monday": "Mon", "Tuesday": "Tue", "Wednesday": "Wed", "Thursday": "Thu", "Friday": "Fri", "Saturday": "Sat", "Sunday": "Sun"}
+
+    def _fmt_weekday(weekday_str: str) -> str:
+        days = [d.strip() for d in weekday_str.split(",")]
+        if set(days) >= set(_WEEKDAYS_FULL):
+            return "Weekdays"
+        return ", ".join(_DAY_ABBR.get(d, d) for d in days)
+
+    _WD_MAP = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+
+    def _next_occurrence_ts(weekday_str: str, time_str: str) -> int:
+        """Return Unix timestamp of the nearest upcoming occurrence of this recurring class."""
+        try:
+            h, m = map(int, time_str.split(":"))
+            days = [_WD_MAP[d.strip()] for d in weekday_str.split(",") if d.strip() in _WD_MAP]
+            today_wd = _now.weekday()
+            best = None
+            for wd in days:
+                delta = (wd - today_wd) % 7
+                candidate = _now.replace(hour=h, minute=m, second=0, microsecond=0) + timedelta(days=delta)
+                if candidate <= _now:
+                    candidate += timedelta(days=7)
+                if best is None or candidate < best:
+                    best = candidate
+            return int(best.timestamp()) if best else 0
+        except Exception:
+            return 0
+
+    # Platform fixed activities (always on_campus)
+    for gc in db.query(FixedActivity).filter(FixedActivity.active == True).order_by(FixedActivity.weekday, FixedActivity.start_time).all():
+        _day_label = _fmt_weekday(gc.weekday)
+        _time_label = gc.start_time + (f"–{gc.end_time}" if gc.end_time else "")
+        _is_free = gc.class_name.lower() in {"gym", "swimming", "running"}
+        items.append(BrowseActivityItem(
+            id=gc.id,
+            source="platform",
+            location_type="on_campus",
+            title=gc.class_name,
+            activity_type=gc.class_name.lower().split()[0],
+            start_time=f"{_day_label} · {_time_label}",
+            location=gc.location,
+            spots_left=max(0, gc.capacity - 0),
+            is_joined=gc.id in joined_gym_ids,
+            host_name=gc.instructor,
+            created_by=None,
+            is_free_facility=_is_free,
+            sort_ts=_next_occurrence_ts(gc.weekday, gc.start_time),
+        ))
+
+    # User-created activities — only upcoming or ongoing (15-min grace period after end)
+    _now = get_current_time()
+    _grace = _now - timedelta(minutes=15)
+    _all_acts = (
+        db.query(Activity)
+        .filter(Activity.status == "active", Activity.start_time >= _grace)
+        .order_by(Activity.start_time.asc())
+        .all()
+    )
+    _all_acts = [a for a in _all_acts if (a.end_time or a.start_time + timedelta(hours=1)) >= _grace]
+    for act in _all_acts:
+        creator = db.query(User).filter(User.id == act.created_by).first()
+        try:
+            start_str = act.start_time.strftime("%a, %b %d · %H:%M")
+        except Exception:
+            start_str = str(act.start_time)
+        try:
+            end_str = act.end_time.strftime("%H:%M") if act.end_time else None
+        except Exception:
+            end_str = None
+        items.append(BrowseActivityItem(
+            id=act.id,
+            source="user_created",
+            location_type=act.location_type or "off_campus",
+            title=act.title,
+            activity_type=act.activity_type,
+            start_time=start_str,
+            end_time=end_str,
+            location=act.location,
+            spots_left=max(0, act.participant_limit - act.current_participants),
+            is_joined=act.id in joined_activity_ids,
+            host_name=creator.full_name if creator else None,
+            created_by=act.created_by,
+            difficulty=act.difficulty,
+            sort_ts=int(act.start_time.timestamp()),
+        ))
+
+    return items
+
+_SPORT_TYPES = {"gym", "yoga", "zumba", "boxing", "swimming", "football",
+                "pickleball", "badminton", "running", "taekwondo"}
+_ENT_TYPES   = {"board games", "movies", "dining", "esports", "coffee chat",
+                "karaoke", "picnics", "concerts"}
+_LEARN_TYPES = {"ai", "product", "english", "book club", "knowledge-sharing"}
+
+def _generate_activity_description(activity: Activity, db: Session) -> str:
+    system = (
+        "You are a concise copywriter for a corporate after-work activity platform. "
+        "Generate exactly one engaging sentence (max 15 words) describing the activity. "
+        "Be specific to the activity type and title. No quotes or trailing punctuation."
+    )
+    prompt = f'Activity title: "{activity.title}"\nActivity type: {activity.activity_type}\n\nOne-sentence description:'
+    try:
+        generated = llm_client.run_agent(system, prompt).strip().strip('"').strip("'").rstrip(".")
+        activity.description = generated
+        db.add(activity)
+        db.commit()
+        return generated
+    except Exception:
+        return f"{activity.activity_type.replace('_', ' ').title()} — join the fun after work"
+
+
+def _score_activity_for_user(activity: Activity, user: User, db: Session) -> RecommendationItem:
+    user_interests = {i.strip().lower() for i in user.interests}
+    act_type = activity.activity_type.lower()
+
+    participant_ids = {p.user_id for p in activity.participants}
+    is_joined = user.id in participant_ids
+    spots_left = max(0, activity.participant_limit - activity.current_participants)
+
+    score = 0
+
+    # Interest match (0-50 pts)
+    if act_type in user_interests:
+        score += 50
+    elif act_type in _SPORT_TYPES and user_interests & _SPORT_TYPES:
+        score += 30
+    elif act_type in _ENT_TYPES and user_interests & _ENT_TYPES:
+        score += 30
+    elif act_type in _LEARN_TYPES and user_interests & _LEARN_TYPES:
+        score += 30
+
+    # Participant interest overlap (0-30 pts)
+    other_ids = participant_ids - {user.id}
+    shared_interests: list[str] = []
+    if other_ids:
+        others = db.query(User).filter(User.id.in_(other_ids)).all()
+        for p in others:
+            common = user_interests & {i.strip().lower() for i in p.interests}
+            shared_interests.extend(common)
+    score += min(30, len(shared_interests) * 10)
+
+    # Spots-available bonus (0-10 pts)
+    score += 10 if spots_left > 3 else (5 if spots_left > 0 else 0)
+
+    # Use activity description as the card insight; generate via LLM if missing
+    if activity.description:
+        ai_insight = activity.description
+    else:
+        ai_insight = _generate_activity_description(activity, db)
+
+    return RecommendationItem(
+        activity=_enrich_activity(activity, db),
+        match_score=min(100, score),
+        ai_insight=ai_insight,
+        spots_left=spots_left,
+        is_joined=is_joined,
+    )
+
+
+@app.get("/api/users/{user_id}/recommendations", response_model=List[RecommendationItem])
+def get_recommendations(user_id: int, limit: int = 10, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    _now = get_current_time()
+    _grace = _now - timedelta(minutes=15)
+    activities = (
+        db.query(Activity)
+        .filter(Activity.status == "active", Activity.start_time >= _grace)
+        .order_by(Activity.start_time.asc())
+        .all()
+    )
+    activities = [a for a in activities if (a.end_time or a.start_time + timedelta(hours=1)) >= _grace]
+
+    results = [_score_activity_for_user(a, user, db) for a in activities]
+    results = [r for r in results if not r.is_joined]
+    results.sort(key=lambda x: x.match_score, reverse=True)
+    return results[:limit]
+
+
 @app.post("/api/activities", response_model=ActivityResponse)
 def create_activity(act_in: ActivityCreate, creator_id: int, db: Session = Depends(get_db)):
     creator = db.query(User).filter(User.id == creator_id).first()
     if not creator:
         raise HTTPException(status_code=404, detail="Creator user not found")
         
-    guidelines = act_in.guidelines
-    if not guidelines:
-        default_guidelines = {
-            "football": "Bring football shoes. Arrive 10 minutes early. Field #3.",
-            "yoga": "Bring a towel. Arrive 5 minutes early.",
-            "ai": "Bring a laptop. Topic: AI Agents."
-        }
-        guidelines = default_guidelines.get(act_in.activity_type.lower(), "Arrive early and have fun!")
+    guidelines = act_in.guidelines or None
         
     activity = Activity(
         title=act_in.title,
         description=act_in.description,
         activity_type=act_in.activity_type,
         source="user_created",
+        location_type=act_in.location_type,
+        difficulty=act_in.difficulty,
         start_time=act_in.start_time,
         end_time=act_in.end_time or (act_in.start_time + timedelta(hours=1)),
         location=act_in.location,
@@ -235,9 +460,30 @@ def delete_activity(activity_id: int, user_id: int, db: Session = Depends(get_db
     if activity.created_by != user_id:
         raise HTTPException(status_code=403, detail="Only the activity host can delete this activity")
     db.query(ActivityParticipant).filter(ActivityParticipant.activity_id == activity_id).delete()
+    db.query(RecommendationLog).filter(RecommendationLog.activity_id == activity_id).delete()
     db.delete(activity)
     db.commit()
     return {"success": True, "message": "Activity deleted."}
+
+@app.delete("/api/users/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.query(Notification).filter(Notification.user_id == user_id).delete()
+    db.query(UserBehavioralInterest).filter(UserBehavioralInterest.user_id == user_id).delete()
+    db.query(UserExperience).filter(UserExperience.user_id == user_id).delete()
+    db.query(ParticipationJournal).filter(ParticipationJournal.user_id == user_id).delete()
+    db.query(PendingExtraction).filter(PendingExtraction.user_id == user_id).delete()
+    db.query(RecommendationLog).filter(RecommendationLog.user_id == user_id).delete()
+    db.query(RecommendationSession).filter(RecommendationSession.user_id == user_id).delete()
+    db.query(FixedActivityParticipant).filter(FixedActivityParticipant.user_id == user_id).delete()
+    db.query(ActivityParticipant).filter(ActivityParticipant.user_id == user_id).delete()
+    db.query(Memory).filter(Memory.user_id == user_id).delete()
+    db.query(Activity).filter(Activity.created_by == user_id).delete()
+    db.delete(user)
+    db.commit()
+    return {"success": True, "message": f"User {user_id} deleted."}
 
 @app.post("/api/activities/{activity_id}/join", response_model=JoinActivityResponse)
 def join_activity(activity_id: int, req: JoinActivityRequest, db: Session = Depends(get_db)):
@@ -311,10 +557,22 @@ def join_activity(activity_id: int, req: JoinActivityRequest, db: Session = Depe
     ).first()
     if rec_log:
         rec_log.status = "joined"
-        
+
     db.commit()
     db.refresh(activity)
-    
+
+    # Reset recommendation attempt state so user starts fresh next session
+    rec_session = db.query(RecommendationSession).filter(
+        RecommendationSession.user_id == req.user_id
+    ).first()
+    if rec_session:
+        from backend.app.session_utils import reset_session
+        reset_session(rec_session, db)
+
+    # Clear any in-flight activity creation flow
+    from backend.app.extraction_utils import clear_pending
+    clear_pending(req.user_id, db)
+
     return JoinActivityResponse(
         success=True,
         message="Successfully joined the activity!",
@@ -326,6 +584,115 @@ def join_activity(activity_id: int, req: JoinActivityRequest, db: Session = Depe
 @app.get("/api/gym-classes", response_model=List[FixedActivityResponse])
 def list_gym_classes(db: Session = Depends(get_db)):
     return db.query(FixedActivity).filter(FixedActivity.active == True).all()
+
+
+@app.post("/api/gym-classes/{gym_class_id}/join")
+def join_gym_class(gym_class_id: int, req: JoinActivityRequest, db: Session = Depends(get_db)):
+    """Join a scheduled gym class for the current week. Resets automatically each Monday."""
+    user = db.query(User).filter(User.id == req.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    gc = db.query(FixedActivity).filter(FixedActivity.id == gym_class_id, FixedActivity.active == True).first()
+    if not gc:
+        raise HTTPException(status_code=404, detail="Class not found")
+
+    week_start = _current_week_start()
+    existing = db.query(FixedActivityParticipant).filter(
+        FixedActivityParticipant.user_id == req.user_id,
+        FixedActivityParticipant.gym_class_id == gym_class_id,
+        FixedActivityParticipant.week_start == week_start,
+    ).first()
+    if existing:
+        participants = db.query(FixedActivityParticipant).filter(
+            FixedActivityParticipant.gym_class_id == gym_class_id,
+            FixedActivityParticipant.week_start == week_start,
+        ).count()
+        return {"success": False, "message": "Already joined this week.", "participants": participants}
+
+    record = FixedActivityParticipant(
+        user_id=req.user_id, gym_class_id=gym_class_id, week_start=week_start
+    )
+    db.add(record)
+    db.commit()
+    participants = db.query(FixedActivityParticipant).filter(
+        FixedActivityParticipant.gym_class_id == gym_class_id,
+        FixedActivityParticipant.week_start == week_start,
+    ).count()
+    return {"success": True, "message": f"Joined {gc.class_name}!", "participants": participants}
+
+@app.get("/api/users/{user_id}/recent-shown-activities", response_model=List[BrowseActivityItem])
+def get_recent_shown_activities(user_id: int, db: Session = Depends(get_db)):
+    """Returns the activities most recently surfaced to the user by the recommendation agent (today)."""
+    from datetime import timedelta
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    logs = (
+        db.query(RecommendationLog)
+        .filter(
+            RecommendationLog.user_id == user_id,
+            RecommendationLog.recommended_at >= today_start,
+        )
+        .order_by(RecommendationLog.recommended_at.desc())
+        .limit(20)
+        .all()
+    )
+    # Only keep the most recent recommendation batch.
+    # Activities from the same recommendation are committed in one transaction
+    # so their timestamps are within milliseconds of each other.
+    # A 10-second window reliably isolates the latest batch from earlier ones.
+    if logs:
+        batch_cutoff = logs[0].recommended_at - timedelta(seconds=10)
+        logs = [l for l in logs if l.recommended_at >= batch_cutoff]
+
+    joined_activity_ids = {
+        p.activity_id for p in db.query(ActivityParticipant)
+        .filter(ActivityParticipant.user_id == user_id).all()
+    }
+
+    items = []
+    seen_ids: set = set()
+    for log in logs:
+        if log.activity_id and log.activity_id not in seen_ids:
+            act = db.query(Activity).filter(Activity.id == log.activity_id).first()
+            if act:
+                seen_ids.add(log.activity_id)
+                creator = db.query(User).filter(User.id == act.created_by).first()
+                try:
+                    _end = act.end_time or (act.start_time + timedelta(hours=1))
+                    start_str = act.start_time.strftime("%a, %b %d · %H:%M") + "–" + _end.strftime("%H:%M")
+                except Exception:
+                    start_str = str(act.start_time)
+                items.append(BrowseActivityItem(
+                    id=act.id,
+                    source="user_created",
+                    location_type=act.location_type or "off_campus",
+                    title=act.title,
+                    activity_type=act.activity_type,
+                    start_time=start_str,
+                    location=act.location,
+                    spots_left=max(0, act.participant_limit - act.current_participants),
+                    is_joined=act.id in joined_activity_ids,
+                    host_name=creator.full_name if creator else None,
+                    created_by=act.created_by,
+                ))
+        elif log.gym_class_id and log.gym_class_id not in seen_ids:
+            gc = db.query(FixedActivity).filter(FixedActivity.id == log.gym_class_id).first()
+            if gc:
+                seen_ids.add(log.gym_class_id)
+                _gc_time = gc.start_time + (f"–{gc.end_time}" if gc.end_time else "")
+                items.append(BrowseActivityItem(
+                    id=gc.id,
+                    source="platform",
+                    location_type="on_campus",
+                    title=gc.class_name,
+                    activity_type=gc.class_name.lower().split()[0],
+                    start_time=_gc_time,
+                    location=gc.location,
+                    spots_left=max(0, gc.capacity),
+                    is_joined=False,
+                    host_name=gc.instructor,
+                    created_by=None,
+                ))
+    return items
 
 # --- SCENARIO 5: MISSING PLAYERS CANDIDATE SELECTOR ---
 
@@ -668,8 +1035,11 @@ def resolve_journal_prompt(
         ParticipationJournal.journal_date == journal_date
     ).first()
     
-    if existing_journal:
+    if existing_journal and existing_journal.status != "asked":
         return {"success": True, "message": "Already resolved for this date."}
+    if existing_journal and existing_journal.status == "asked":
+        db.delete(existing_journal)
+        db.flush()
         
     # Handle the resolution
     resolved_activity_type = None
@@ -842,6 +1212,27 @@ def get_conversation_starter(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
 
     now = get_current_time()
+    first_name = user.full_name.split()[-1]
+
+    # Priority 0: brand-new user — no participation history at all
+    total_participated = db.query(ActivityParticipant).filter(
+        ActivityParticipant.user_id == user_id
+    ).count()
+    if total_participated == 0:
+        interests = user.interests or []
+        interest_line = ""
+        if interests:
+            interest_line = f"\n\nTôi thấy bạn quan tâm đến **{interests[0]}**{(' và **' + interests[1] + '**') if len(interests) > 1 else ''} — sẽ ưu tiên gợi ý những hoạt động đó cho bạn."
+        message = (
+            f"Chào {first_name}! Tôi là ALP — trợ lý after-work của bạn tại VNG Campus.\n\n"
+            f"Tôi có thể giúp bạn:\n"
+            f"• **Tìm hoạt động** phù hợp với tâm trạng và lịch của bạn\n"
+            f"• **Xem lịch** yoga, gym, bơi lội, cầu lông và các lớp tại campus\n"
+            f"• **Tạo hoạt động** riêng và rủ đồng nghiệp cùng tham gia"
+            f"{interest_line}\n\n"
+            f"Thử hỏi tôi: \"Tối nay có gì không?\" hoặc \"Muốn gì đó nhẹ nhàng sau giờ làm\" là được rồi."
+        )
+        return ConversationStarterResponse(type="new_user_welcome", message=message)
 
     # Priority 1: unresolved participation exists
     if now.hour >= 21:
@@ -869,6 +1260,14 @@ def get_conversation_starter(user_id: int, db: Session = Depends(get_db)):
             ).first()
 
             if not participated:
+                # Mark as asked so this question doesn't repeat on the next app open.
+                # The journal resolve endpoint will overwrite this when the user answers.
+                db.add(ParticipationJournal(
+                    user_id=user_id,
+                    journal_date=target_date,
+                    status="asked"
+                ))
+                db.commit()
                 return ConversationStarterResponse(
                     type="participation_followup",
                     message="What did you do yesterday evening?"
@@ -908,18 +1307,26 @@ Declared interests: {', '.join(interests) if interests else 'none yet'}"""
 
 @app.post("/api/dev/reset")
 def dev_reset(db: Session = Depends(get_db)):
-    """Wipes all user data for testing. Gym classes are preserved."""
+    """Wipes all user data for testing. Fixed activities are preserved."""
     db.query(Notification).delete()
     db.query(ParticipationJournal).delete()
     db.query(UserBehavioralInterest).delete()
     db.query(UserExperience).delete()
     db.query(RecommendationLog).delete()
+    db.query(RecommendationSession).delete()
+    db.query(PendingExtraction).delete()
     db.query(ActivityParticipant).delete()
     db.query(Memory).delete()
     db.query(Activity).delete()
     db.query(User).delete()
     db.commit()
     return {"success": True, "message": "All user data cleared."}
+
+@app.post("/api/dev/seed-fixed-activities")
+def dev_seed_fixed_activities(db: Session = Depends(get_db)):
+    """Replaces all fixed activities with the authoritative dataset from database.py."""
+    count = seed_fixed_activities(db)
+    return {"success": True, "inserted": count}
 
 @app.post("/api/users/{user_id}/onboard", response_model=UserResponse)
 def onboard_user(user_id: int, req: UserOnboardRequest, db: Session = Depends(get_db)):

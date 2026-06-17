@@ -11,3 +11,11 @@ __pycache__
 .agentbase
 .agentbase-state.json
 .agentbase/
+.DS_Store
+**/.DS_Store
+frontend/__pycache__
+frontend/*.pyc
+backend/tests/
+docs/
+*.md
+!README.md

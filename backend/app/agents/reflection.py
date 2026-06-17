@@ -9,26 +9,41 @@ def run_reflection_agent(user_query: str) -> Optional[str]:
     """
     # Simple keyword heuristic check to save LLM tokens/calls if mock or simple message
     lowered = user_query.lower()
-    indicative_phrases = ["bored of", "bored with", "prefer", "usually", "want to meet", "hate", "love", "like to", "don't like"]
-    
+    indicative_phrases = [
+        # English
+        "bored of", "bored with", "prefer", "usually", "want to meet", "hate", "love", "like to", "don't like",
+        # Vietnamese preference signals
+        "thích", "không thích", "chán", "ghét", "hay đi", "thường xuyên", "hay tham gia",
+        "muốn gặp", "muốn kết bạn", "sở thích", "đam mê", "yêu thích",
+        "không muốn", "không hợp", "không phù hợp với tôi",
+    ]
+
     has_indicator = any(phrase in lowered for phrase in indicative_phrases)
     if not has_indicator:
         return None
 
-    system_prompt = """
-    You are a Reflection Agent. Your goal is to analyze an employee's chat message and extract any persistent preferences, habits, routines, or feelings they express about after-work activities.
-    
-    If the user expresses a habit, preference, or emotional state about an activity (e.g., "I am bored of going to the gym every day", "I usually play football on Tuesdays", "I want to meet people from Product"), extract it into a first-person statement.
-    If no new permanent preference or habit is expressed, respond with exactly "NONE".
-    Do not output any introductory text or explanation, just the statement or "NONE".
-    
-    Examples:
-    Input: "I am bored of going to the gym every day."
-    Output: "I am bored of going to the gym every day."
-    
-    Input: "Do you have any football games?"
-    Output: "NONE"
-    """
+    system_prompt = """You are a Reflection Agent. Analyze an employee's chat message and extract any persistent preferences, habits, or feelings about after-work activities.
+
+If the user expresses a preference, habit, or feeling, extract it as a concise first-person statement in the same language as their message (Vietnamese or English).
+If no persistent preference is expressed, respond with exactly "NONE".
+No explanation — just the statement or "NONE".
+
+Examples:
+Input: "I am bored of going to the gym every day."
+Output: "I am bored of the gym."
+
+Input: "Tôi thích yoga hơn gym."
+Output: "Tôi thích yoga hơn gym."
+
+Input: "Tôi không thích các hoạt động quá ồn ào."
+Output: "Tôi không thích các hoạt động ồn ào."
+
+Input: "Do you have any football games?"
+Output: "NONE"
+
+Input: "Có hoạt động gì tối nay không?"
+Output: "NONE"
+"""
 
     user_prompt = f"Analyze this user query: '{user_query}'"
 

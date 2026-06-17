@@ -1,0 +1,265 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Sign In - AfterWork Agent</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Shared Components Logic & Style Guidance Integration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "secondary-container": "#e2dfde",
+                    "luxe-purple": "#460479",
+                    "tertiary-fixed-dim": "#ddb7ff",
+                    "primary-fixed-dim": "#ffb2b6",
+                    "surface-dim": "#dbdad9",
+                    "surface-container": "#efeded",
+                    "tertiary-fixed": "#f0dbff",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "secondary-fixed": "#e5e2e1",
+                    "canvas": "#FFFFFF",
+                    "inverse-on-surface": "#f2f0f0",
+                    "primary": "#ba0036",
+                    "on-tertiary-container": "#fffbff",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#e4e2e2",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#40000d",
+                    "on-primary-container": "#fffbff",
+                    "surface-container-highest": "#e4e2e2",
+                    "surface-soft": "#F7F7F7",
+                    "on-error": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#e9e8e7",
+                    "on-surface": "#1b1c1c",
+                    "secondary": "#5f5e5e",
+                    "tertiary": "#7742aa",
+                    "inverse-primary": "#ffb2b6",
+                    "on-secondary-fixed": "#1b1c1c",
+                    "on-surface-variant": "#5c3f41",
+                    "surface-tint": "#be0038",
+                    "hairline": "#DDDDDD",
+                    "surface": "#fbf9f8",
+                    "surface-container-low": "#f5f3f3",
+                    "on-background": "#1b1c1c",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed-variant": "#474746",
+                    "on-tertiary-fixed-variant": "#602a93",
+                    "on-secondary-container": "#636262",
+                    "inverse-surface": "#303031",
+                    "primary-fixed": "#ffdada",
+                    "on-secondary": "#ffffff",
+                    "primary-container": "#e21e4a",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed": "#2c0050",
+                    "outline": "#906f70",
+                    "rausch-active": "#E00B41",
+                    "tertiary-container": "#915bc5",
+                    "background": "#fbf9f8",
+                    "surface-bright": "#fbf9f8",
+                    "outline-variant": "#e5bdbe",
+                    "ink": "#222222",
+                    "rausch": "#FF385C",
+                    "on-primary-fixed-variant": "#920029"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "1rem",
+                    "xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "stack-xl": "48px",
+                    "stack-xs": "4px",
+                    "stack-md": "16px",
+                    "section-padding": "80px",
+                    "grid-margin": "80px",
+                    "grid-gutter": "24px",
+                    "stack-lg": "24px"
+            },
+            "fontFamily": {
+                    "display-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "nav-link": ["Inter"],
+                    "body-md": ["Inter"],
+                    "badge": ["Inter"],
+                    "display-xl": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "button-md": ["Inter"],
+                    "caption": ["Inter"],
+                    "display-xl-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "display-md": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "nav-link": ["16px", {"lineHeight": "1.25", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "badge": ["11px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "700"}],
+                    "display-xl": ["28px", {"lineHeight": "1.4", "fontWeight": "700"}],
+                    "display-lg": ["22px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                    "button-md": ["16px", {"lineHeight": "1", "fontWeight": "600"}],
+                    "caption": ["14px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                    "display-xl-mobile": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+        /* Premium Utility Micro-interactions */
+        .btn-premium {
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        }
+        .btn-premium:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+        
+        .input-premium {
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        /* Editorial Breathing Room */
+        .editorial-canvas {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        /* Airy card for focus */
+        .login-card {
+            background: #FFFFFF;
+            width: 100%;
+            max-width: 480px;
+        }
+    </style>
+</head>
+<body class="bg-canvas text-ink min-h-screen selection:bg-rausch/20 overflow-x-hidden font-body-md"><div class="fixed inset-0 -z-10 bg-surface-bright overflow-hidden pointer-events-none"><div class="absolute -top-24 -right-24 w-96 h-96 bg-rausch/5 rounded-full blur-3xl"></div><div class="absolute -bottom-24 -left-24 w-96 h-96 bg-luxe-purple/5 rounded-full blur-3xl"></div></div>
+<!-- TopNavBar Suppressed as per Destination Rule for Login Screen -->
+<main class="editorial-canvas">
+<div class="login-card p-stack-xl md:p-12 rounded-xl shadow-sm border border-hairline">
+<!-- Branding & Mascot -->
+<div class="flex flex-col items-center mb-stack-xl text-center">
+<div class="mb-stack-lg transition-transform hover:scale-105 duration-300">
+<img alt="ALP Mascot" class="h-24 w-24 w-auto drop-shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1qf9VJDK8-cUR6PBj9u_H6Pr7_lXjm6FycC3FOzz6MHLTT9KQOeBi7_liqfQk__Gq2e5TadZKwr2dfKIaN12OzFYG6Qp8VkSHnx3Jzs-pqaaSgB6bTSthAJ0N9EgC6mtzFgKAvhCfmU0YNG2nKnBVRmDLJyWugl7xk-e7nCQYYqjywL3QiqdQzv8-Dde5OTLvMAGfsxkCrv6eMt8IkWrVc1yjTnH0h70Kzc2VeY8jGxK6QqQb4edEEao3b6OhLmi42yTSkUQxn2I">
+</div>
+<h1 class="font-display-xl text-display-xl-mobile md:text-display-xl text-ink mb-stack-xs">
+                    ALP Agent
+                </h1>
+<p class="font-body-md text-secondary max-w-[300px]">Discover activities, connect with Starters, and find your community</p>
+</div>
+<!-- Login Form -->
+<form class="space-y-stack-lg" id="loginForm">
+<div class="space-y-stack-xs">
+<label class="font-caption text-caption text-secondary px-1" for="email">VNG Domain</label>
+<input class="input-premium w-full h-14 px-4 rounded-lg border border-hairline focus:ring-0 focus:border-ink outline-none text-ink placeholder:text-secondary-fixed-dim" id="email" name="email" placeholder="annt7" required="" type="email">
+</div>
+<div class="space-y-stack-xs">
+<div class="flex justify-between items-center px-1">
+<label class="font-caption text-caption text-secondary" for="password">Password</label>
+<a class="font-caption text-caption text-rausch hover:underline underline-offset-4" href="#">Forgot?</a>
+</div>
+<div class="relative">
+<input class="input-premium w-full h-14 px-4 rounded-lg border border-hairline focus:ring-0 focus:border-ink outline-none text-ink placeholder:text-secondary-fixed-dim" id="password" name="password" placeholder="••••••••" required="" type="password">
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-ink" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<button class="btn-premium w-full h-14 bg-rausch text-white font-button-md text-button-md rounded-lg flex items-center justify-center gap-stack-sm hover:bg-rausch-active shadow-md hover:shadow-lg mt-stack-md" type="submit">
+                    Get Started
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</form>
+<!-- Divider -->
+<!-- Social Logins -->
+<div class="grid grid-cols-2 gap-stack-md">
+</div>
+<!-- Footer Text -->
+<p class="mt-stack-xl text-center font-body-sm text-secondary">
+                Don't have an account? 
+                <a class="text-rausch font-bold hover:underline underline-offset-4" href="#">Register now</a>
+</p>
+</div>
+</main>
+<!-- Footer Component as per Shared Components JSON -->
+<footer class="w-full py-stack-xl border-t border-hairline dark:border-secondary bg-surface dark:bg-inverse-surface">
+<div class="max-w-[1280px] mx-auto px-grid-margin flex flex-col md:flex-row justify-between items-center gap-stack-md">
+<div class="font-display-md text-display-md text-ink dark:text-canvas">
+                AfterWork Agent
+            </div>
+<div class="flex flex-wrap justify-center gap-stack-lg">
+<a class="font-body-sm text-body-sm text-secondary dark:text-secondary-fixed-dim hover:underline decoration-rausch underline-offset-4 transition-opacity hover:opacity-70" href="#">Privacy</a>
+<a class="font-body-sm text-body-sm text-secondary dark:text-secondary-fixed-dim hover:underline decoration-rausch underline-offset-4 transition-opacity hover:opacity-70" href="#">Terms</a>
+<a class="font-body-sm text-body-sm text-secondary dark:text-secondary-fixed-dim hover:underline decoration-rausch underline-offset-4 transition-opacity hover:opacity-70" href="#">Support</a>
+<a class="font-body-sm text-body-sm text-secondary dark:text-secondary-fixed-dim hover:underline decoration-rausch underline-offset-4 transition-opacity hover:opacity-70" href="#">About ALP</a>
+</div>
+<div class="font-body-sm text-body-sm text-secondary dark:text-secondary-fixed-dim">
+                © 2026 AfterWork Agent. Built for high-achievers.
+            </div>
+</div>
+</footer>
+<script>
+        // Micro-interaction for the login button
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalContent = btn.innerHTML;
+            
+            // Loading state
+            btn.innerHTML = `
+                <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Signing in...
+            `;
+            btn.disabled = true;
+
+            // Simulating a response
+            setTimeout(() => {
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined">check_circle</span>
+                    Welcome back!
+                `;
+                btn.classList.replace('bg-rausch', 'bg-tertiary');
+                
+                setTimeout(() => {
+                    // Reset or Redirect
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                    btn.classList.replace('bg-tertiary', 'bg-rausch');
+                }, 2000);
+            }, 1500);
+        });
+
+        // Toggle password visibility
+        const togglePass = document.querySelector('button .material-symbols-outlined');
+        togglePass?.parentElement.addEventListener('click', () => {
+            const input = document.getElementById('password');
+            if (input.type === 'password') {
+                input.type = 'text';
+                togglePass.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                togglePass.textContent = 'visibility';
+            }
+        });
+    </script>
+
+
+
+
+</body></html>

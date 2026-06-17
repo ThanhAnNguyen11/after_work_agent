@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime, date
 
 class UserBase(BaseModel):
@@ -45,6 +45,9 @@ class ActivityCreate(BaseModel):
     start_time: datetime
     end_time: Optional[datetime] = None
     location: str
+    location_type: str = "off_campus"  # "on_campus" | "off_campus"
+    open_to: str = "all"  # "all" | "same_bu"
+    difficulty: Optional[str] = None
     participant_limit: int = 10
     guidelines: Optional[str] = None
 
@@ -54,6 +57,9 @@ class ActivityResponse(BaseModel):
     description: Optional[str] = None
     activity_type: str
     source: str = "user_created"
+    location_type: str = "off_campus"
+    open_to: str = "all"
+    difficulty: Optional[str] = None
     start_time: datetime
     end_time: Optional[datetime] = None
     location: str
@@ -68,6 +74,30 @@ class ActivityResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class BrowseActivityItem(BaseModel):
+    id: int
+    source: str          # "platform" | "user_created"
+    location_type: str   # "on_campus" | "off_campus"
+    title: str
+    activity_type: str
+    start_time: str
+    end_time: Optional[str] = None
+    location: str
+    spots_left: int
+    is_joined: bool
+    host_name: Optional[str] = None
+    created_by: Optional[int] = None
+    difficulty: Optional[str] = None
+    is_free_facility: bool = False  # Gym/Swimming walk-in — no registration needed
+    sort_ts: int = 0               # Unix timestamp for client-side time sorting
+
+class RecommendationItem(BaseModel):
+    activity: ActivityResponse
+    match_score: int        # 0–100
+    ai_insight: str
+    spots_left: int
+    is_joined: bool
+
 class MemoryResponse(BaseModel):
     id: int
     user_id: int
@@ -80,9 +110,12 @@ class MemoryResponse(BaseModel):
 class ChatRequest(BaseModel):
     user_id: int
     message: str
+    conversation_history: List[Dict[str, str]] = []  # [{role, content}, ...] — last N messages before current
 
 class ChatResponse(BaseModel):
     response: str
+    activity_created: bool = False
+    activity_type: Optional[str] = None
 
 class JoinActivityRequest(BaseModel):
     user_id: int

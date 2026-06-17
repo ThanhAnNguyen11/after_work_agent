@@ -1,0 +1,266 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>AfterWork Agent - Onboarding Step 2</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "ink": "#222222",
+                        "error-container": "#ffdad6",
+                        "luxe-purple": "#460479",
+                        "surface-container": "#efeded",
+                        "primary-container": "#e21e4a",
+                        "on-background": "#1b1c1c",
+                        "surface": "#fbf9f8",
+                        "secondary": "#5f5e5e",
+                        "surface-dim": "#dbdad9",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "background": "#fbf9f8",
+                        "on-tertiary-container": "#fffbff",
+                        "surface-bright": "#fbf9f8",
+                        "surface-container-high": "#e9e8e7",
+                        "on-primary-fixed-variant": "#920029",
+                        "tertiary-fixed-dim": "#ddb7ff",
+                        "secondary-fixed": "#e5e2e1",
+                        "surface-container-low": "#f5f3f3",
+                        "primary-fixed-dim": "#ffb2b6",
+                        "on-primary-container": "#fffbff",
+                        "primary": "#ba0036",
+                        "inverse-surface": "#303031",
+                        "on-surface-variant": "#5c3f41",
+                        "secondary-container": "#e2dfde",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#be0038",
+                        "surface-container-highest": "#e4e2e2",
+                        "hairline": "#DDDDDD",
+                        "surface-soft": "#F7F7F7",
+                        "rausch-active": "#E00B41",
+                        "surface-variant": "#e4e2e2",
+                        "outline": "#906f70",
+                        "inverse-primary": "#ffb2b6",
+                        "on-surface": "#1b1c1c",
+                        "tertiary-fixed": "#f0dbff",
+                        "outline-variant": "#e5bdbe",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "on-secondary-container": "#636262",
+                        "rausch": "#FF385C",
+                        "on-error": "#ffffff",
+                        "canvas": "#FFFFFF",
+                        "on-tertiary-fixed": "#2c0050",
+                        "inverse-on-surface": "#f2f0f0",
+                        "tertiary": "#7742aa",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#915bc5",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#40000d",
+                        "on-tertiary-fixed-variant": "#602a93",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#ffdada",
+                        "on-secondary-fixed-variant": "#474746"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "1.0rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-padding": "80px",
+                        "stack-xs": "4px",
+                        "stack-xl": "48px",
+                        "stack-sm": "8px",
+                        "grid-margin": "80px",
+                        "stack-lg": "24px",
+                        "stack-md": "16px",
+                        "grid-gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "display-md": ["Inter"],
+                        "button-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-xl": ["Inter"],
+                        "caption": ["Inter"],
+                        "nav-link": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "badge": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-md": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "button-md": ["16px", {"lineHeight": "1", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                        "display-xl": ["28px", {"lineHeight": "1.4", "fontWeight": "700"}],
+                        "caption": ["14px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                        "nav-link": ["16px", {"lineHeight": "1.25", "fontWeight": "600"}],
+                        "display-lg": ["22px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "badge": ["11px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .tag-active {
+            background-color: #FF385C;
+            color: white;
+            border-color: #FF385C;
+        }
+        .onboarding-gradient {
+            background: radial-gradient(circle at 0% 0%, #FFF5F7 0%, #FFFFFF 50%, #F5F7FF 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body class="bg-background text-ink font-body-md onboarding-gradient min-h-screen">
+<!-- Top Navigation Header (Standard Shell Logic) -->
+<!-- <header class="w-full top-0 sticky bg-canvas border-b border-hairline z-50">
+<div class="flex justify-between items-center px-6 md:px-grid-margin py-4 max-w-[1280px] mx-auto">
+<div class="flex items-center gap-2">
+<span class="font-display-md text-display-md text-ink">AfterWork Agent</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary hover:text-rausch transition-colors cursor-pointer" data-icon="help_outline">help_outline</span>
+<img alt="ALP Mascot" class="w-10 h-10 rounded-full border border-hairline object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLvOiaJlD5i6KEkQx01uJu2pOwSjYEffKxNTey6rylWLO7sw3zRfWorYwz8xbK8p18EKXaDvty_SUv6UXhagQPuzO2dfpOuC4gC_cjTek0tr_FxnyRhlY3uJixI4gAiT7JPvj2bMrMthVuFWwBmFoh-Q3EI66iXjsr_Ld2HeXZkBbd-6Xn-z45K34UaPpTbnaOPizA9ikONHmfagIO-wzqxk2jgPgfLvVyst0JSgNoZFTc5vPd8RqMeHYlg">
+</div>
+</div>
+</header> -->
+<main class="flex flex-col items-center justify-center px-4 py-stack-xl">
+<!-- Onboarding Container -->
+<div class="max-w-[640px] w-full bg-canvas rounded-lg card-shadow border border-hairline p-8 md:p-10 relative overflow-hidden">
+<!-- Progress Bar Section -->
+<div class="mb-stack-lg">
+<div class="flex justify-between items-end mb-2">
+<div>
+
+<p class="font-body-sm text-body-sm text-secondary">Step 2: Interests &amp; Hobbies</p>
+</div>
+<span class="font-badge text-badge text-rausch uppercase tracking-wider">100% Complete</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-rausch transition-all duration-700 ease-out" style="width: 100%"></div>
+</div>
+</div>
+<!-- Content Section -->
+<div class="space-y-stack-xl">
+<!-- Welcome Message with Mascot -->
+<div class="flex items-center gap-6 bg-surface-soft p-6 rounded-lg border border-hairline">
+<img alt="ALP" class="w-16 h-16 rounded-full object-cover shadow-sm bg-white p-1" src="https://lh3.googleusercontent.com/aida/AP1WRLvOiaJlD5i6KEkQx01uJu2pOwSjYEffKxNTey6rylWLO7sw3zRfWorYwz8xbK8p18EKXaDvty_SUv6UXhagQPuzO2dfpOuC4gC_cjTek0tr_FxnyRhlY3uJixI4gAiT7JPvj2bMrMthVuFWwBmFoh-Q3EI66iXjsr_Ld2HeXZkBbd-6Xn-z45K34UaPpTbnaOPizA9ikONHmfagIO-wzqxk2jgPgfLvVyst0JSgNoZFTc5vPd8RqMeHYlg">
+<div>
+<p class="font-body-md text-body-md text-ink">
+                            "Great Work! Tell me what you love to do! I’ll find activities that match your hobbies."
+                        </p>
+</div>
+</div>
+<!-- Tag Categories -->
+<div class="space-y-stack-lg">
+<!-- Sports -->
+<div>
+<h3 class="font-display-md text-display-md text-ink mb-stack-md flex items-center gap-2">
+<span class="material-symbols-outlined text-rausch" data-icon="fitness_center">fitness_center</span>
+                            Sports &amp; Fitness
+                        </h3>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Gym</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Yoga</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Zumba</button>
+<button class="px-4 py-2 rounded-full border text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200 border-hairline" onclick="toggleTag(this)" style="transform: scale(1);">Boxing</button>
+<button class="px-4 py-2 rounded-full border text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200 border-hairline" onclick="toggleTag(this)" style="transform: scale(1);">Swimming</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Football</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Pickleball</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Badminton</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Running</button>
+<button class="px-4 py-2 rounded-full border text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200 border-hairline" onclick="toggleTag(this)" style="transform: scale(1);">Taekwondo</button>
+</div>
+</div>
+<!-- Entertainment -->
+<div>
+<h3 class="font-display-md text-display-md text-ink mb-stack-md flex items-center gap-2">
+<span class="material-symbols-outlined text-rausch" data-icon="theater_comedy">theater_comedy</span>
+                            Entertainment &amp; Social
+                        </h3>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Board Games</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Movies</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Dining</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Esports</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Coffee Chat</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Karaoke</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Picnics</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Concerts</button></div>
+</div>
+<!-- Learning -->
+<div>
+<h3 class="font-display-md text-display-md text-ink mb-stack-md flex items-center gap-2">
+<span class="material-symbols-outlined text-rausch" data-icon="school">school</span>
+                            Learning &amp; Growth
+                        </h3>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">AI</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Product</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">English</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Book club</button>
+<button class="px-4 py-2 rounded-full border border-hairline text-body-sm hover:border-rausch hover:text-rausch transition-all duration-200" onclick="toggleTag(this)">Knowledge-sharing</button>
+</div>
+</div>
+</div>
+<!-- Footer Action -->
+<div class="pt-8 border-t border-hairline flex flex-col md:flex-row justify-between items-center gap-4">
+<button class="font-button-md text-button-md text-secondary hover:text-ink transition-colors px-6 py-3">
+                        Back
+                    </button>
+<button class="bg-rausch hover:bg-rausch-active text-white font-button-md text-button-md px-10 py-4 rounded-lg transition-all transform active:scale-95 shadow-lg shadow-rausch/20 w-full md:w-auto">
+                        Complete Profile
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Shell -->
+<footer class="w-full py-stack-xl mt-auto border-t border-hairline bg-canvas">
+<div class="flex flex-col md:flex-row justify-between items-center px-6 md:px-grid-margin max-w-[1280px] mx-auto gap-4">
+<p class="font-body-sm text-body-sm text-secondary">© 2026 AfterWork Agent</p>
+<nav class="flex gap-6">
+<a class="font-body-sm text-body-sm text-secondary hover:underline decoration-rausch" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-secondary hover:underline decoration-rausch" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-secondary hover:underline decoration-rausch" href="#">Contact Support</a>
+</nav>
+</div>
+</footer>
+<script>
+        function toggleTag(button) {
+            button.classList.toggle('tag-active');
+            button.classList.toggle('border-hairline');
+            
+            // Interaction feedback
+            if (button.classList.contains('tag-active')) {
+                button.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    button.style.transform = 'scale(1)';
+                }, 150);
+            }
+        }
+    </script>
+
+
+
+
+
+
+</body></html>

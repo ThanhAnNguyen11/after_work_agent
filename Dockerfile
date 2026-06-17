@@ -6,7 +6,6 @@ WORKDIR /app
 
 # Install system dependencies (needed for compiling some packages if any)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
     curl \
     && rm -rf /var/lib/apt/lists/*
 

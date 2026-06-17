@@ -58,10 +58,21 @@ class APIClient:
             print(f"Error fetching activities: {e}")
             return []
 
+    def browse_activities(self, user_id: int) -> List[Dict[str, Any]]:
+        try:
+            response = requests.get(f"{self.base_url}/api/activities/browse", params={"user_id": user_id})
+            if response.status_code == 200:
+                return response.json()
+            return []
+        except Exception as e:
+            print(f"Error browsing activities: {e}")
+            return []
+
     def create_activity(
-        self, title: str, description: str, activity_type: str, 
+        self, title: str, description: str, activity_type: str,
         start_time: str, location: str, participant_limit: int, creator_id: int,
-        end_time: Optional[str] = None, guidelines: Optional[str] = None
+        end_time: Optional[str] = None, guidelines: Optional[str] = None,
+        location_type: str = "off_campus", difficulty: Optional[str] = None
     ) -> Optional[Dict[str, Any]]:
         """
         start_time and end_time should be ISO format strings (e.g. 2026-06-07T18:00:00)
@@ -72,8 +83,11 @@ class APIClient:
             "activity_type": activity_type.lower(),
             "start_time": start_time,
             "location": location,
+            "location_type": location_type,
             "participant_limit": int(participant_limit)
         }
+        if difficulty:
+            payload["difficulty"] = difficulty
         if end_time:
             payload["end_time"] = end_time
         if guidelines:
@@ -360,5 +374,15 @@ class APIClient:
         except Exception as e:
             print(f"Error onboarding user: {e}")
             return None
+
+    def get_recommendations(self, user_id: int, limit: int = 10) -> List[Dict[str, Any]]:
+        try:
+            response = requests.get(f"{self.base_url}/api/users/{user_id}/recommendations", params={"limit": limit})
+            if response.status_code == 200:
+                return response.json()
+            return []
+        except Exception as e:
+            print(f"Error fetching recommendations: {e}")
+            return []
 
 api_client = APIClient()
